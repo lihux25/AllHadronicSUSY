@@ -14,7 +14,7 @@
   <use   name="Geometry/CaloGeometry"/>
   <use   name="RecoParticleFlow/PFProducer"/>
   <use   name="PhysicsTools/Utilities"/>
-  <use   name="UserCode/DataFormats"/>
+  <use   name="AllHadronicSUSY/DataFormats"/>
   <use   name="recipeAUX/OxbridgeMT2"/>
   <use   name="SimGeneral/HepPDTRecord"/>
   <flags   EDM_PLUGIN="1"/>
