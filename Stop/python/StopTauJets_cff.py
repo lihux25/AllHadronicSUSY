@@ -1,4 +1,4 @@
-from SandBox.Stop.tauJetsSelector_cfi import *
+from AllHadronicSUSY.Stop.tauJetsSelector_cfi import *
 
 tauJets = tauJetsSelector.clone()
 tauJets.MetSrc    = cms.InputTag("patMETsPF")

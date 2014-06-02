@@ -1,11 +1,11 @@
 
-from SandBox.Skims.RA2Cleaning_cff       import *
-from SandBox.Stop.StopJets_cff           import *
-from SandBox.Stop.StopLeptons_cff        import *
-#from SandBox.Stop.StopPhotons_cff       import *
-from SandBox.Stop.StopTrackIsolation_cff import *
-from SandBox.Stop.StopTauJets_cff        import *
-from SandBox.Stop.StopBTagJets_cff       import *
+from AllHadronicSUSY.Skims.RA2Cleaning_cff       import *
+from AllHadronicSUSY.Stop.StopJets_cff           import *
+from AllHadronicSUSY.Stop.StopLeptons_cff        import *
+#from AllHadronicSUSY.Stop.StopPhotons_cff       import *
+from AllHadronicSUSY.Stop.StopTrackIsolation_cff import *
+from AllHadronicSUSY.Stop.StopTauJets_cff        import *
+from AllHadronicSUSY.Stop.StopBTagJets_cff       import *
 
 stopObjects = cms.Sequence(  
   stopPFJets *

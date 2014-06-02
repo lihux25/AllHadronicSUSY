@@ -1,11 +1,11 @@
-from SandBox.Skims.muonSelector_cfi import *
+from AllHadronicSUSY.Skims.muonSelector_cfi import *
 from PhysicsTools.PatAlgos.selectionLayer1.muonCountFilter_cfi import *
 
-from SandBox.Skims.electronSelector_cfi import *
+from AllHadronicSUSY.Skims.electronSelector_cfi import *
 from PhysicsTools.PatAlgos.selectionLayer1.electronCountFilter_cfi import *
 
-from SandBox.Stop.sakLooseMuonSelector_cfi import *
-from SandBox.Stop.sakLooseElectronSelector_cfi import *
+from AllHadronicSUSY.Stop.sakLooseMuonSelector_cfi import *
+from AllHadronicSUSY.Stop.sakLooseElectronSelector_cfi import *
 
 stoppatMuonsPFID = muonSelector.clone()
 stoppatMuonsPFID.MuonSource = cms.InputTag("patMuonsPF")

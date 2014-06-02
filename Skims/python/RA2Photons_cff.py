@@ -22,7 +22,7 @@ photonIDCutLoose  = cms.string('et > 50.0 && (abs(eta) < 1.4442 || (abs(eta) > 1
                               )
 
 
-from SandBox.Skims.addphotonuserdata_cfi import addphotonuserbasic
+from AllHadronicSUSY.Skims.addphotonuserdata_cfi import addphotonuserbasic
 patPhotonsRA2    = addphotonuserbasic.clone()
 
 patPhotonsID = cms.EDFilter(

@@ -1,10 +1,10 @@
 
-#from SandBox.Stop.StopJets_cff import *
-#from SandBox.Stop.StopTrackIsolation_cff import *
-##from SandBox.Stop.RA2Leptons_cff import *
-#from SandBox.Stop.StopTauJets_cff        import *
-from SandBox.Stop.StopObjects_cff        import *
-from SandBox.Stop.StopDPhiSelection_cff  import *
+#from AllHadronicSUSY.Stop.StopJets_cff import *
+#from AllHadronicSUSY.Stop.StopTrackIsolation_cff import *
+##from AllHadronicSUSY.Stop.RA2Leptons_cff import *
+#from AllHadronicSUSY.Stop.StopTauJets_cff        import *
+from AllHadronicSUSY.Stop.StopObjects_cff        import *
+from AllHadronicSUSY.Stop.StopDPhiSelection_cff  import *
 
 stopFullPFchsSelectionNoMET = cms.Sequence(
   stopCountPFchsJetsPt30 *

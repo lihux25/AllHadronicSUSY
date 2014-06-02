@@ -1,26 +1,26 @@
 
-from SandBox.Skims.basicJetSelector_cfi import *
+from AllHadronicSUSY.Skims.basicJetSelector_cfi import *
 from PhysicsTools.PatAlgos.selectionLayer1.jetCountFilter_cfi import *
 
 # PFJets (with CHS)
 stopJetsPFchsPt30     = selectedPatJets.clone()
-stopJetsPFchsPt30.src = cms.InputTag('patJetsPF')
+stopJetsPFchsPt30.jetSrc = cms.InputTag('patJetsAK5PFCHS')
 stopJetsPFchsPt30.cut = cms.string('pt > 30')
 
 stopJetsPFchsPt70Eta24 = selectedPatJets.clone()
-stopJetsPFchsPt70Eta24.src = cms.InputTag("patJetsPF")
+stopJetsPFchsPt70Eta24.jetSrc = cms.InputTag("patJetsAK5PFCHS")
 stopJetsPFchsPt70Eta24.cut = cms.string("pt>70 && abs(eta)<2.4")
 
 stopJetsPFchsPt50Eta24 = selectedPatJets.clone()
-stopJetsPFchsPt50Eta24.src = cms.InputTag("patJetsPF")
+stopJetsPFchsPt50Eta24.jetSrc = cms.InputTag("patJetsAK5PFCHS")
 stopJetsPFchsPt50Eta24.cut = cms.string("pt>50 && abs(eta)<2.4")
 
 stopJetsPFchsPt30Eta24 = selectedPatJets.clone()
-stopJetsPFchsPt30Eta24.src = cms.InputTag("patJetsPF")
+stopJetsPFchsPt30Eta24.jetSrc = cms.InputTag("patJetsAK5PFCHS")
 stopJetsPFchsPt30Eta24.cut = cms.string("pt>30 && abs(eta)<2.4")
 
 stopJetsPFchsPt70eta2p5 = selectedPatJets.clone()
-stopJetsPFchsPt70eta2p5.src = cms.InputTag('patJetsPF')
+stopJetsPFchsPt70eta2p5.jetSrc = cms.InputTag('patJetsAK5PFCHS')
 stopJetsPFchsPt70eta2p5.cut = cms.string('pt > 70 & abs(eta) < 2.5')
 
 #count jets

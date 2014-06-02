@@ -1,5 +1,5 @@
 
-from SandBox.Skims.basicJetSelector_drt_from_AOD_cfi import *
+from AllHadronicSUSY.Skims.basicJetSelector_drt_from_AOD_cfi import *
 from PhysicsTools.PatAlgos.selectionLayer1.jetCountFilter_cfi import *
 
 # PFJets (default)

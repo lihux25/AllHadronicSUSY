@@ -1,27 +1,28 @@
 
-from SandBox.Skims.basicJetSelector_drt_from_AOD_cfi import *
+#from AllHadronicSUSY.Skims.basicJetSelector_drt_from_AOD_cfi import *
+from AllHadronicSUSY.SkimsRA2.simpleJetSelector_cfi import *
 from PhysicsTools.PatAlgos.selectionLayer1.jetCountFilter_cfi import *
 
 # PFJets (with CHS)
-stopJetsPFchsPt30     = selectedPatJetsRA2.clone()
-stopJetsPFchsPt30.src = cms.InputTag('patJetsPF')
-stopJetsPFchsPt30.cut = cms.string('pt > 30')
+stopJetsPFchsPt30     = simpleJetSelector.clone()
+stopJetsPFchsPt30.jetSrc = cms.InputTag('patJetsAK5PFCHS')
+stopJetsPFchsPt30.pfJetCut = cms.string('pt > 30')
 
-stopJetsPFchsPt70Eta24 = selectedPatJetsRA2.clone()
-stopJetsPFchsPt70Eta24.src = cms.InputTag("patJetsPF")
-stopJetsPFchsPt70Eta24.cut = cms.string("pt>70 && abs(eta)<2.4")
+stopJetsPFchsPt70Eta24 = simpleJetSelector.clone()
+stopJetsPFchsPt70Eta24.jetSrc = cms.InputTag("patJetsAK5PFCHS")
+stopJetsPFchsPt70Eta24.pfJetCut = cms.string("pt>70 && abs(eta)<2.4")
 
-stopJetsPFchsPt50Eta24 = selectedPatJetsRA2.clone()
-stopJetsPFchsPt50Eta24.src = cms.InputTag("patJetsPF")
-stopJetsPFchsPt50Eta24.cut = cms.string("pt>50 && abs(eta)<2.4")
+stopJetsPFchsPt50Eta24 = simpleJetSelector.clone()
+stopJetsPFchsPt50Eta24.jetSrc = cms.InputTag("patJetsAK5PFCHS")
+stopJetsPFchsPt50Eta24.pfJetCut = cms.string("pt>50 && abs(eta)<2.4")
 
-stopJetsPFchsPt30Eta24 = selectedPatJetsRA2.clone()
-stopJetsPFchsPt30Eta24.src = cms.InputTag("patJetsPF")
-stopJetsPFchsPt30Eta24.cut = cms.string("pt>30 && abs(eta)<2.4")
+stopJetsPFchsPt30Eta24 = simpleJetSelector.clone()
+stopJetsPFchsPt30Eta24.jetSrc = cms.InputTag("patJetsAK5PFCHS")
+stopJetsPFchsPt30Eta24.pfJetCut = cms.string("pt>30 && abs(eta)<2.4")
 
-stopJetsPFchsPt70eta2p5 = selectedPatJetsRA2.clone()
-stopJetsPFchsPt70eta2p5.src = cms.InputTag('patJetsPF')
-stopJetsPFchsPt70eta2p5.cut = cms.string('pt > 70 & abs(eta) < 2.5')
+stopJetsPFchsPt70eta2p5 = simpleJetSelector.clone()
+stopJetsPFchsPt70eta2p5.jetSrc = cms.InputTag('patJetsAK5PFCHS')
+stopJetsPFchsPt70eta2p5.pfJetCut = cms.string('pt > 70 & abs(eta) < 2.5')
 
 #count jets
 stopCountPFchsJetsPt30           = countPatJets.clone()

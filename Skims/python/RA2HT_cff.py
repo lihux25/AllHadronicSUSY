@@ -1,5 +1,5 @@
 
-from SandBox.Skims.htProducer_cfi import *
+from AllHadronicSUSY.Skims.htProducer_cfi import *
 
 # HT using PFJets
 htPF = ht.clone()
@@ -10,7 +10,7 @@ htPFchs = ht.clone()
 htPFchs.JetCollection = cms.InputTag("patJetsPFchsPt50Eta25")
 
 
-from SandBox.Skims.htFilter_cfi import *
+from AllHadronicSUSY.Skims.htFilter_cfi import *
 
 # filter on PFHT
 htPFFilter = htFilter.clone()

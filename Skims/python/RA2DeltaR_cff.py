@@ -1,5 +1,5 @@
 
-from SandBox.Skims.jetMHTDPhiFilter_cfi import *
+from AllHadronicSUSY.Skims.jetMHTDPhiFilter_cfi import *
 
 jetMHTPFDPhiFilter = jetMHTDPhiFilter.clone()
 jetMHTPFDPhiFilter.JetSource = cms.InputTag("patJetsAK5PFPt30")

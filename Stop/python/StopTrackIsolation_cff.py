@@ -1,4 +1,4 @@
-from SandBox.Stop.trackIsolationMaker_cfi import *
+from AllHadronicSUSY.Stop.trackIsolationMaker_cfi import *
 
 # make collection of isolated tracks
 isolatedTracks              = trackIsolationFilter.clone()

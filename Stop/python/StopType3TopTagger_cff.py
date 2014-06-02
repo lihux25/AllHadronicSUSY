@@ -1,11 +1,11 @@
-from UserCode.TopTagger.topTagger_cfi import *
+from AllHadronicSUSY.TopTagger.topTagger_cfi import *
 
 type3topTagger = topTagger.clone()
 type3topTagger.taggingMode = cms.untracked.bool(True)
 
 stopType3TopTagger = cms.Sequence( type3topTagger )
 
-from SandBox.Stop.filterDoubles_cfi import *
+from AllHadronicSUSY.Stop.filterDoubles_cfi import *
 
 topMassCuttype3topTagger = doublesFilter.clone()
 topMassCuttype3topTagger.ResultSource = cms.InputTag("stopType3TopTagger:bestTopJetMass")

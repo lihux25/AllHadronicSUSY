@@ -1,5 +1,5 @@
 
-from SandBox.Skims.mhtProducer_cfi import *
+from AllHadronicSUSY.Skims.mhtProducer_cfi import *
 
 # MHT using PF Jets
 mhtPF = mht.clone()
@@ -8,7 +8,7 @@ mhtPF.JetCollection = cms.InputTag('patJetsAK5PFPt30')
 mhtPFchs = mht.clone()
 mhtPFchs.JetCollection = cms.InputTag('patJetsPFchsPt30')
 
-from SandBox.Skims.mhtFilter_cfi import *
+from AllHadronicSUSY.Skims.mhtFilter_cfi import *
 
 # filter on PFJet MHT 
 mhtPFFilter = mhtFilter.clone()

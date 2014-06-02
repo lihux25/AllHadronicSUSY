@@ -1,5 +1,5 @@
 
-from SandBox.Stop.btagJetSelector_cfi import *
+from AllHadronicSUSY.Stop.btagJetSelector_cfi import *
 from PhysicsTools.PatAlgos.selectionLayer1.jetCountFilter_cfi import *
 
 #select b-tag jets

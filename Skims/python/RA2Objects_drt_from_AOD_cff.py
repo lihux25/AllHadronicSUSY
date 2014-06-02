@@ -1,11 +1,11 @@
 
-from SandBox.Skims.RA2Jets_drt_from_AOD_cff import *
-from SandBox.Skims.RA2HT_cff import *
-from SandBox.Skims.RA2MHT_cff import *
-from SandBox.Skims.RA2Leptons_cff import *
-from SandBox.Skims.RA2Photons_cff import *
-#from SandBox.Skims.maskedECALTowers_cff import *
-from SandBox.Skims.RA2Cleaning_cff import *
+from AllHadronicSUSY.Skims.RA2Jets_drt_from_AOD_cff import *
+from AllHadronicSUSY.Skims.RA2HT_cff import *
+from AllHadronicSUSY.Skims.RA2MHT_cff import *
+from AllHadronicSUSY.Skims.RA2Leptons_cff import *
+#from AllHadronicSUSY.Skims.RA2Photons_cff import *
+#from AllHadronicSUSY.Skims.maskedECALTowers_cff import *
+#from AllHadronicSUSY.Skims.RA2Cleaning_cff import *
 
 ra2Objects = cms.Sequence(  
   ra2PFJets *
@@ -16,6 +16,6 @@ ra2Objects = cms.Sequence(
   mhtPFchs *
   ra2Muons *
   ra2PFMuons *
-  ra2Electrons *
-  ra2Photons
+  ra2Electrons #*
+#  ra2Photons
 )
