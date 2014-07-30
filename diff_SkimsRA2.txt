@@ -1,0 +1,3 @@
+cp /uscms_data/d3/lhx/tasks/recipes/prepare2015/allINone/src/AllHadronicSUSY/SkimsRA2/plugins/WeightProducer.cc SkimsRA2/plugins/WeightProducer.cc
+cp /uscms_data/d3/lhx/tasks/recipes/prepare2015/allINone/src/AllHadronicSUSY/SkimsRA2/plugins/histAndTree.cc SkimsRA2/plugins/histAndTree.cc
+cp -a /uscms_data/d3/lhx/tasks/recipes/prepare2015/allINone/src/AllHadronicSUSY/SkimsRA2/workdir/prod SkimsRA2/workdir/

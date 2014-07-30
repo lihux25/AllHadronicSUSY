@@ -243,7 +243,7 @@ bool WeightProducer::initPUinput(){
 // No input PU root files, so don't do any PU reweighting
    if( inputPUfileMC_ =="" || inputPUfileData_ == "" ) return false;
 
-   char *pch =0;
+   const char *pch =0;
 
 // Only accept PU weighting in histograms in a root file
 // For cases that one has access of text file, it is easy to fill a histogram and put it into a root file.

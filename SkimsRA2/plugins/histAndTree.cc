@@ -823,14 +823,40 @@ bool histAndTree::filter(edm::Event& iEvent, const edm::EventSetup& iSetup) {
          int pdgId = genPart.pdgId();
 
          int momIdx = -1;
-         if( genPart.numberOfMothers() >0 ){
-            momIdx = find_idx( * (genPart.mother()) );
+         if( genPart.numberOfMothers() >=1 ){
+            momIdx = find_idx( * (genPart.mother(0)) );
+
+            bool foundMom = false;
+            const reco::Candidate * ptrMomPart = genPart.mother(0);
+            int tmpmomIdx = momIdx;
+            while(!foundMom && tmpmomIdx >= genDecayChainPartIdxVec_->front() ){
+               for(unsigned int jd=0; jd<genDecayChainPartIdxVec_->size(); jd++){
+                  if(tmpmomIdx == (*genDecayChainPartIdxVec_)[jd] ){ foundMom = true; break; }
+               }
+               if( !foundMom ){
+                  if( ptrMomPart->numberOfMothers() >= 1 ){
+                     ptrMomPart = ptrMomPart->mother(0);
+                     tmpmomIdx = find_idx( * ptrMomPart );
+                  }else{
+                     tmpmomIdx = -1; break;
+                  }
+               }
+            }
+            if( foundMom || tmpmomIdx == -1 ) momIdx = tmpmomIdx;
          }
+         if( momIdx == -1 ) std::cout<<"WARNING ... idxGen : "<<idxGen<<"  pdgId : "<<pdgId<<"  momIdx : "<<momIdx<<std::endl;
 
          genDecayIdxVec_TR->push_back(idxGen);
          genDecayMomIdxVec_TR->push_back(momIdx);
          genDecayPdgIdVec_TR->push_back(pdgId);
          genDecayLVec_TR->push_back(genPartLVec);
+      }
+      if( debug_ ){
+         std::cout<<"\nidxGen/pdgId/momIdx : ";
+         for(unsigned int ig=0; ig<genDecayIdxVec_TR->size(); ig++){
+            std::cout<<"  "<<genDecayIdxVec_TR->at(ig)<<"/"<<genDecayPdgIdVec_TR->at(ig)<<"/"<<genDecayMomIdxVec_TR->at(ig);
+         }
+         std::cout<<std::endl;
       }
 
       for(unsigned int ig=0; ig<genJetsInputTags_.size(); ig++){
