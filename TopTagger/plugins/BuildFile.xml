@@ -19,6 +19,8 @@
   <use   name="HLTrigger/HLTcore"/>
   <use   name="RecoEgamma/EgammaTools"/>
   <use   name="recipeAUX/OxbridgeMT2"/>
+  <use   name="fastjet"/>
+  <use   name="JetMETCorrections/Objects"/>
   <flags   EDM_PLUGIN="1"/>
 </library>
 <export>

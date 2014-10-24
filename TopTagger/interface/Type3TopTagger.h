@@ -101,6 +101,9 @@ namespace topTagger{
          double MT2;
 // For HepTopTagger
          std::vector<TLorentzVector> modiforiJetsVec; std::vector<double> modifrecoJetsBtagCSVS;
+
+// For groomed jets
+         std::vector<TLorentzVector> groomedJetsVec_;
 // End of internal and/or intermediate variables
 
 /* 
@@ -153,6 +156,7 @@ namespace topTagger{
          double calcMT2(const TLorentzVector &fatJet1LVec, const TLorentzVector &fatJet2LVec, const TLorentzVector &metLVec); 
          double calcMT(const TLorentzVector &objLVec, const TLorentzVector &metLVec);
          void makeWjetfatJets(const vector<TLorentzVector> &oriJetsVec, const std::vector<double> &recoJetsBtagCSVS, vector<vector<int> > &tmpFinalCombfatJets, vector<vector<int> > &tmpFinalRemaining, vector<vector<vector<int> > > &tmpFinalCombJetSubStruc);
+         void makeTopjetfatJets(const vector<TLorentzVector> &oriJetsVec, const std::vector<double> &recoJetsBtagCSVS, vector<vector<int> > &tmpFinalCombfatJets, vector<vector<int> > &tmpFinalRemaining, vector<vector<vector<int> > > &tmpFinalCombJetSubStruc);
 */
 
          type3TopTagger(){
@@ -193,11 +197,16 @@ namespace topTagger{
 
             setWjetMassRanges(70, 110);
             setdoWjetfatJets(false);
+
+            setTopjetMassRanges(130, 220);
+            setdoTopjetfatJets(false);
  
             setdoCombTopTagger(false);
             setlowTopPtToComb(150);
 
             setDefaultVars();
+
+            groomedJetsVec_.clear();
          }
 
          void setDefaultVars(){
@@ -368,6 +377,9 @@ namespace topTagger{
                }else{
                   passStatusVec.push_back(0);
                }
+            }else if( tmpFinalSubStrucMass.size() ==0 ){
+               passCriteria = 1;
+               passStatusVec.push_back(1);
             }
 
             return passCriteria;
@@ -423,8 +435,18 @@ namespace topTagger{
 
             vector<int> tmpWjetIdx, tmpRemainIdx;
 
+            std::vector<TLorentzVector> forJetMassLVec = oriJetsVec;
+            if( !groomedJetsVec_.empty() ){
+               if( groomedJetsVec_.size() == oriJetsVec.size() ){
+                  forJetMassLVec = groomedJetsVec_;
+               }else{
+                  std::cout<<"\nWARNING ...   groomedJetsVec_.size : "<<groomedJetsVec_.size()<<"  NOT equal input oriJetsVec.size : "<<oriJetsVec.size()<<std::endl;
+                  std::cout<<"reverting back to oriJetsVec for W mass determination! Please double-check the inputs!"<<std::endl<<std::endl;
+               }
+            }
+
             for(unsigned int ij=0; ij<oriJetsVec.size(); ij++){
-               TLorentzVector perWjetLVec = oriJetsVec[ij];
+               TLorentzVector perWjetLVec = forJetMassLVec[ij];
 //               if( perWjetLVec.M() <= highWjetMass_ && perWjetLVec.M() >= lowWjetMass_ && recoJetsBtagCSVS[ij] <= CSVS_ ){
                if( perWjetLVec.M() <= highWjetMass_ && perWjetLVec.M() >= lowWjetMass_ ){
                   tmpWjetIdx.push_back(ij);
@@ -450,6 +472,44 @@ namespace topTagger{
                   perSubStruc.push_back(WjetSubStruc);
                   tmpFinalCombJetSubStruc.push_back(perSubStruc);
                }
+            }
+         }
+
+         void makeTopjetfatJets(const vector<TLorentzVector> &oriJetsVec, const std::vector<double> &recoJetsBtagCSVS, vector<vector<int> > &tmpFinalCombfatJets, vector<vector<int> > &tmpFinalRemaining, vector<vector<vector<int> > > &tmpFinalCombJetSubStruc){
+            tmpFinalCombfatJets.clear(); tmpFinalRemaining.clear(); tmpFinalCombJetSubStruc.clear();
+
+            vector<int> tmpTopjetIdx, tmpRemainIdx;
+
+            std::vector<TLorentzVector> forJetMassLVec = oriJetsVec;
+            if( !groomedJetsVec_.empty() ){
+               if( groomedJetsVec_.size() == oriJetsVec.size() ){
+                  forJetMassLVec = groomedJetsVec_;
+               }else{
+                  std::cout<<"\nWARNING ...   groomedJetsVec_.size : "<<groomedJetsVec_.size()<<"  NOT equal input oriJetsVec.size : "<<oriJetsVec.size()<<std::endl;
+                  std::cout<<"reverting back to oriJetsVec for top mass determination! Please double-check the inputs!"<<std::endl<<std::endl;
+               }
+            }
+
+            for(unsigned int ij=0; ij<oriJetsVec.size(); ij++){
+               TLorentzVector perTopjetLVec = forJetMassLVec[ij];
+               if( perTopjetLVec.M() <= highTopjetMass_ && perTopjetLVec.M() >= lowTopjetMass_ ){
+                  tmpTopjetIdx.push_back(ij);
+               }else{
+                  tmpRemainIdx.push_back(ij);
+               }
+            }
+
+// In the perComb, the first one and only one is the Top jet!
+            for(unsigned int iw=0; iw<tmpTopjetIdx.size(); iw++){
+               vector<int> perComb, perRemain;
+               perComb.push_back(tmpTopjetIdx[iw]);
+               for(int ij=0; ij<(int)oriJetsVec.size(); ij++){
+                  if( ij == tmpTopjetIdx[iw] ) continue;
+                  perRemain.push_back(ij);
+               }
+               tmpFinalCombfatJets.push_back(perComb); tmpFinalRemaining.push_back(perRemain);
+               vector<vector<int> > perSubStruc;
+               tmpFinalCombJetSubStruc.push_back(perSubStruc);
             }
          }
 
@@ -479,6 +539,18 @@ namespace topTagger{
                      tmpFinalCombfatJets.push_back(tempWjetCombfatJets[ic]);
                      tmpFinalRemaining.push_back(tempWjetRemaining[ic]);
                      tmpFinalCombJetSubStruc.push_back(tempWjetCombJetSubStruc[ic]);
+                  }
+               }
+            }
+
+            if( doTopjetfatJets_ ){ 
+               vector<vector<int> > tempTopjetCombfatJets; vector<vector<int> > tempTopjetRemaining; vector<vector<vector<int> > > tempTopjetCombJetSubStruc;
+               makeTopjetfatJets(oriJetsVec, recoJetsBtagCSVS, tempTopjetCombfatJets, tempTopjetRemaining, tempTopjetCombJetSubStruc);
+               for(unsigned int ic=0; ic<tempTopjetCombfatJets.size(); ic++){
+                  if( filterfatJetWithDRcone(oriJetsVec, tempTopjetCombfatJets[ic], simuCAdeltaR_) ){
+                     tmpFinalCombfatJets.push_back(tempTopjetCombfatJets[ic]);
+                     tmpFinalRemaining.push_back(tempTopjetRemaining[ic]);
+                     tmpFinalCombJetSubStruc.push_back(tempTopjetCombJetSubStruc[ic]);
                   }
                }
             }
@@ -677,9 +749,13 @@ namespace topTagger{
                   int idx = finalCombfatJets[ic][it];
                   if( recoJetsBtagCSVS[idx] > CSVS_ && fabs(oriJetsVec[idx].Eta())<maxEtaForbJets_ ) cntTopCandPassCSVS++;
                }
+               for(unsigned int it=0; it<finalCombfatJets[ic].size() && finalCombfatJets[ic].size() ==1; it++){
+                  int idx = finalCombfatJets[ic][it];
+                  if( recoJetsBtagCSVS[idx] > CSVS_ && fabs(oriJetsVec[idx].Eta())<maxEtaForbJets_ ) cntTopCandPassCSVS++;
+               }
 
                cntTopCandPassCSVSVec.push_back(cntTopCandPassCSVS);
-               if( bestmxy == -1 && cntTopCandPassCSVS !=0 ) std::cout<<"WARNING ... NO best W found when b appears ?!"<<std::endl;
+               if( finalCombfatJets[ic].size() !=1 && bestmxy == -1 && cntTopCandPassCSVS !=0 ) std::cout<<"WARNING ... NO best W found when b appears ?!"<<"  INFO : finalCombfatJets[ic].size : "<<finalCombfatJets[ic].size()<<std::endl;
          
                if( cntTopCandPassCSVS == 0 && finalCombfatJets[ic].size() ==3 ){
                   for(unsigned int it=0; it<finalCombJetSubStruc[ic].size(); it++){
@@ -695,9 +771,10 @@ namespace topTagger{
                   }
                }
          
-               if( bestmxy == -1 ) std::cout<<"WARNING ... NO best W found?!"<<std::endl;
+               if( finalCombfatJets[ic].size() !=1 && bestmxy == -1 ) std::cout<<"WARNING ... NO best W found?!"<<std::endl;
          
                double chisq = (fatJetm123 - mTop_)*(fatJetm123 - mTop_)*(bestmxy - mW_)*(bestmxy - mW_);
+               if( finalCombfatJets[ic].size() == 1 ) chisq = (fatJetm123 - mTop_)*(fatJetm123 - mTop_)*(fatJetm123 - mTop_)*(fatJetm123 - mTop_);
          
          // Find a tagged b-jet in the remaining jets corresponding to the top fat jet configuration
                int cntRemainingPassCSVS = 0;
@@ -712,7 +789,7 @@ namespace topTagger{
                if( cntRemainingPassCSVS + cntTopCandPassCSVS != cntnbJetsCSVS ){
                   std::cout<<"WARNING ... cntnbJetsCSVS : "<<cntnbJetsCSVS<<"  !=   cntRemainingPassCSVS : "<<cntRemainingPassCSVS<<"  +  cntTopCandPassCSVS : "<<cntTopCandPassCSVS<<std::endl;
                }
-               if( cntnbJetsCSVS >=2 && cntTopCandPassCSVS == 0 ) continue;
+               if( finalCombfatJets[ic].size() !=1 && cntnbJetsCSVS >=2 && cntTopCandPassCSVS == 0 ) continue;
          
          // This "isTopJet && cntRemainingPassCSVS" configuration is what we want
          // We can have multiple such combination in one event
@@ -1115,9 +1192,9 @@ namespace topTagger{
 
             mTbestTopJet = calcMT(bestTopJetLVec, metLVec);
 
-            mTbestWJet = calcMT(bestCloseTomWLVec, metLVec);
+            if( !bestSubMassVec.empty() ) mTbestWJet = calcMT(bestCloseTomWLVec, metLVec);
 
-            mTbestbJet = calcMT(bestbJetLVec, metLVec);
+            if( !bestSubMassVec.empty() ) mTbestbJet = calcMT(bestbJetLVec, metLVec);
 
 //            mTremainingTopJet = calcMT(remainingTopJetLVec, metLVec);
 
@@ -1623,9 +1700,15 @@ namespace topTagger{
 
          void setdoWjetfatJets( const bool doWjetfatJets ){ doWjetfatJets_ = doWjetfatJets; }
 
+         void setTopjetMassRanges( const double lowTopjetMass, const double highTopjetMass ){ lowTopjetMass_ = lowTopjetMass; highTopjetMass_ = highTopjetMass; }
+
+         void setdoTopjetfatJets( const bool doTopjetfatJets ){ doTopjetfatJets_ = doTopjetfatJets; }
+
          void setdoCombTopTagger( const bool doCombTopTagger){ doCombTopTagger_ = doCombTopTagger; }
 
          void setlowTopPtToComb( const double lowTopPtToComb){ lowTopPtToComb_ = lowTopPtToComb; }
+
+         void setgroomedJetsVec( const std::vector<TLorentzVector> groomedJetsVec ){ groomedJetsVec_ = groomedJetsVec; }
 
       private:
 
@@ -1701,6 +1784,8 @@ namespace topTagger{
 // The range here is quite loose.
          double lowWjetMass_, highWjetMass_;
          bool doWjetfatJets_;
+         double lowTopjetMass_, highTopjetMass_;
+         bool doTopjetfatJets_;
 
          bool doCombTopTagger_;
          double lowTopPtToComb_;

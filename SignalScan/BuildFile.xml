@@ -25,6 +25,3 @@
 <use   name="CondFormats/JetMETObjects"/>
 <use   name="SimDataFormats/GeneratorProducts"/>
 <use   name="recipeAUX/OxbridgeMT2"/>
- <export>
-  <lib   name="1"/>
-</export>

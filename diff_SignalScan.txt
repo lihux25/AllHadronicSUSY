@@ -1,2 +1,0 @@
-cp /uscms_data/d3/lhx/tasks/recipes/prepare2015/allINone/src/AllHadronicSUSY/SignalScan/plugins/genDecayStringMakerPythia8.cc SignalScan/plugins/
-cp /uscms_data/d3/lhx/tasks/recipes/prepare2015/allINone/src/AllHadronicSUSY/SignalScan/python/genDecayStringMakerPythia8_cfi.py SignalScan/python/

@@ -88,6 +88,9 @@ class histAndTree : public edm::EDFilter{
     edm::InputTag jetSrc_;
     edm::Handle<edm::View<reco::Jet> > jets;
     edm::Handle<std::vector<pat::Jet> > patjets;
+    edm::InputTag groomedJetSrc_, groomedJetIdxSrc_;
+    edm::Handle<std::vector<TLorentzVector> > groomedJetsLVec_;
+    edm::Handle<std::vector<std::vector<int> > > groomedJetsIdx_;
     std::vector<std::string> bTagKeyString_;
     size nbTagKeys;
     size nJets;
@@ -188,6 +191,7 @@ class histAndTree : public edm::EDFilter{
     std::vector<TLorentzVector> *forVetoIsoTrksLVec_TR;
     std::vector<std::vector<double> > *forVetoIsoTrksAuxVec_TR;
     std::vector<int> *forVetoIsoTrksConsMatchedJetIdxVec_TR;
+    std::vector<TLorentzVector> *groomedJetsLVec_TR;
 
     double mu1pt_TR, mu1eta_TR, mu1phi_TR;
     double mu2pt_TR, mu2eta_TR, mu2phi_TR;
@@ -285,6 +289,9 @@ histAndTree::histAndTree(const edm::ParameterSet & iConfig) {
    eleSrc_ = iConfig.getParameter<edm::InputTag>("eleSrc");
 //   tauSrc_ = iConfig.getParameter<edm::InputTag>("tauSrc");
 
+   groomedJetSrc_ = iConfig.getParameter<edm::InputTag>("groomedJetSrc");
+   groomedJetIdxSrc_ = iConfig.getParameter<edm::InputTag>("groomedJetIdxSrc");
+
 //   std::string defaultbTagKeyString[] = {"jetBProbabilityBJetTags","jetProbabilityBJetTags","trackCountingHighPurBJetTags","trackCountingHighEffBJetTags","simpleSecondaryVertexHighEffBJetTags","simpleSecondaryVertexHighPurBJetTags","combinedSecondaryVertexBJetTags","combinedSecondaryVertexMVABJetTags"};
    std::string defaultbTagKeyString[] = {"combinedSecondaryVertexBJetTags"};
    std::vector<std::string> defaultbTagKeyStringStr(defaultbTagKeyString, defaultbTagKeyString + sizeof(defaultbTagKeyString)/sizeof(defaultbTagKeyString[0]));
@@ -380,6 +387,8 @@ histAndTree::histAndTree(const edm::ParameterSet & iConfig) {
    decayTypeVec_TR = new std::vector<std::string>;
 
    jetsLVec_TR = new std::vector<TLorentzVector>;
+   groomedJetsLVec_TR = new std::vector<TLorentzVector>;
+
    forVetoIsoTrksLVec_TR = new std::vector<TLorentzVector>(); forVetoIsoTrksAuxVec_TR = new std::vector<std::vector<double> >();
    forVetoIsoTrksConsMatchedJetIdxVec_TR = new std::vector<int>();
 
@@ -449,6 +458,7 @@ histAndTree::histAndTree(const edm::ParameterSet & iConfig) {
       outTree->Branch("mhtSgnf", &mhtSgnf_TR, "mhtSgnf/D");
       outTree->Branch("mhtSgnfProb", &mhtSgnfProb_TR, "mhtSgnfProb/D");
       outTree->Branch("jetsLVec", "std::vector<TLorentzVector>", &jetsLVec_TR, 32000, 0);
+      outTree->Branch("groomedJetsLVec", "std::vector<TLorentzVector>", &groomedJetsLVec_TR, 32000, 0);
       outTree->Branch("forVetoIsoTrksLVec", "std::vector<TLorentzVector>", &forVetoIsoTrksLVec_TR, 32000, 0);
       outTree->Branch("forVetoIsoTrksAuxVec", "std::vector<std::vector<double> >", &forVetoIsoTrksAuxVec_TR, 32000, 0);
       outTree->Branch("forVetoIsoTrksConsMatchedJetIdxVec", "std::vector<int>", &forVetoIsoTrksConsMatchedJetIdxVec_TR, 32000, 0);
@@ -564,6 +574,7 @@ void histAndTree::setTreeDefaultVars(){
    jet3pt_TR= -99, jet3eta_TR= -99, jet3phi_TR= -99, jet3energy_TR= -99;
    otherJetspt_TR->clear(); otherJetseta_TR->clear(); otherJetsphi_TR->clear(); otherJetsenergy_TR->clear();
    jetsLVec_TR->clear();
+   groomedJetsLVec_TR->clear();
    forVetoIsoTrksLVec_TR->clear(); forVetoIsoTrksAuxVec_TR->clear(); forVetoIsoTrksConsMatchedJetIdxVec_TR->clear();
 
    bestTopJetIdx_TR = -99; pickedRemainingCombfatJetIdx_TR = -99;
@@ -720,6 +731,13 @@ bool histAndTree::filter(edm::Event& iEvent, const edm::EventSetup& iSetup) {
       }   
    }
 
+   if( groomedJetsLVec_.isValid() && groomedJetsIdx_.isValid() ){
+      if( groomedJetsLVec_->size() != groomedJetsIdx_->size() || groomedJetsLVec_->size() != nJets ){
+         std::cout<<"ERROR ... mismatch between  groomedJetsLVec_->size : "<<groomedJetsLVec_->size()<<"  groomedJetsIdx_->size : "<<groomedJetsIdx_->size()<<"  nJets : "<<nJets<<std::endl;
+         return false;
+      }
+   }
+
    for(size ij=0; ij<nJets; ij++){
       if( !isData && fillGenInfo_ ){
          double jeteta = (*jets)[ij].eta(), jetphi = (*jets)[ij].phi(), jetpt = (*jets)[ij].pt();
@@ -747,6 +765,17 @@ bool histAndTree::filter(edm::Event& iEvent, const edm::EventSetup& iSetup) {
       TLorentzVector perJetLVec;
       perJetLVec.SetPtEtaPhiE( (*jets)[ij].pt(), (*jets)[ij].eta(), (*jets)[ij].phi(), (*jets)[ij].energy() );
       jetsLVec_TR->push_back(perJetLVec);
+      if( groomedJetsLVec_.isValid() && groomedJetsIdx_.isValid() ){
+         if( (*groomedJetsIdx_)[ij].size() != 1 ){
+            std::cout<<"ERROR ... per groomedJetsIdx_[].size : "<<(*groomedJetsIdx_)[ij].size()<<" NOT 1?"<<std::endl;
+            return false;
+         }
+         if( (*groomedJetsIdx_)[ij][0] != (int)ij ){
+            std::cout<<"ERROR ... mismatch between (*groomedJetsIdx_)[ij][0] : "<<(*groomedJetsIdx_)[ij][0]<<" and ij : "<<ij<<std::endl;
+            return false;
+         }
+         groomedJetsLVec_TR->push_back((*groomedJetsLVec_)[ij]);
+      }
 
       if( ij ==0 ){
          jet1 = (*jets)[ij];
@@ -1044,6 +1073,8 @@ void histAndTree::loadGenInfo(const edm::Event& iEvent){
 
 void histAndTree::loadRecoJets(const edm::Event& iEvent){
    iEvent.getByLabel(jetSrc_, jets); nJets = jets->size();
+   iEvent.getByLabel(groomedJetSrc_, groomedJetsLVec_);
+   iEvent.getByLabel(groomedJetIdxSrc_, groomedJetsIdx_);
 
    isPatJet = false;
    edm::ProductID jetProdID = jets.id();

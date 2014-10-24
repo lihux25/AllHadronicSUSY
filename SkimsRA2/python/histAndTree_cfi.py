@@ -58,4 +58,7 @@ histAndTree = cms.EDFilter('histAndTree',
    smsModelDaughterMassSrc = cms.InputTag("smsModelFilter:smsDaughterMass"),
 
    genJetsInputTags = cms.VInputTag(),
+
+   groomedJetSrc = cms.InputTag(""),
+   groomedJetIdxSrc = cms.InputTag(""),
 )                               
