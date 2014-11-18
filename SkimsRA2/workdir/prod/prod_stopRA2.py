@@ -15,7 +15,7 @@ process.source = cms.Source("PoolSource",
     )
 )
 ## Maximal Number of Events
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 
 # The following is make patJets, but EI is done with the above
 process.load("PhysicsTools.PatAlgos.producersLayer1.patCandidates_cff")
@@ -95,7 +95,14 @@ elif options.fileslist:
    process.source.fileNames = inputfiles
 else:
    process.source.fileNames = [
-      'file:patTuple_mini.root'
+       '/store/user/lpccsa14/SMS-T1tttt_2J_mGl-1500_mLSP-100_Tune4C_13TeV-madgraph-tauola/Spring14dr-PU_S14_POSTLS170_V6AN1-miniAOD706p1/140716_120211/0000/miniAOD-prod_PAT_1.root',
+       '/store/user/lpccsa14/SMS-T1tttt_2J_mGl-1500_mLSP-100_Tune4C_13TeV-madgraph-tauola/Spring14dr-PU_S14_POSTLS170_V6AN1-miniAOD706p1/140716_120211/0000/miniAOD-prod_PAT_2.root',
+       '/store/user/lpccsa14/SMS-T1tttt_2J_mGl-1500_mLSP-100_Tune4C_13TeV-madgraph-tauola/Spring14dr-PU_S14_POSTLS170_V6AN1-miniAOD706p1/140716_120211/0000/miniAOD-prod_PAT_3.root',
+       '/store/user/lpccsa14/SMS-T1tttt_2J_mGl-1500_mLSP-100_Tune4C_13TeV-madgraph-tauola/Spring14dr-PU_S14_POSTLS170_V6AN1-miniAOD706p1/140716_120211/0000/miniAOD-prod_PAT_4.root',
+       '/store/user/lpccsa14/SMS-T1tttt_2J_mGl-1500_mLSP-100_Tune4C_13TeV-madgraph-tauola/Spring14dr-PU_S14_POSTLS170_V6AN1-miniAOD706p1/140716_120211/0000/miniAOD-prod_PAT_5.root',
+       '/store/user/lpccsa14/SMS-T1tttt_2J_mGl-1500_mLSP-100_Tune4C_13TeV-madgraph-tauola/Spring14dr-PU_S14_POSTLS170_V6AN1-miniAOD706p1/140716_120211/0000/miniAOD-prod_PAT_6.root',
+       '/store/user/lpccsa14/SMS-T1tttt_2J_mGl-1500_mLSP-100_Tune4C_13TeV-madgraph-tauola/Spring14dr-PU_S14_POSTLS170_V6AN1-miniAOD706p1/140716_120211/0000/miniAOD-prod_PAT_7.root',
+       '/store/user/lpccsa14/SMS-T1tttt_2J_mGl-1500_mLSP-100_Tune4C_13TeV-madgraph-tauola/Spring14dr-PU_S14_POSTLS170_V6AN1-miniAOD706p1/140716_120211/0000/miniAOD-prod_PAT_8.root'
    ]
 
 process.maxEvents.input = options.maxEvents
@@ -128,6 +135,29 @@ process.selectedElectrons = cms.EDFilter("CandPtrSelector", src = cms.InputTag("
     max(0.,pfIsolationVariables().sumNeutralHadronEt+
     pfIsolationVariables().sumPhotonEt-
     0.5*pfIsolationVariables().sumPUPt))/pt < 0.20'''))
+
+## --- Selection sequences ---------------------------------------------
+# leptons
+process.load("PhysicsTools.PatAlgos.selectionLayer1.muonCountFilter_cfi")
+process.load("PhysicsTools.PatAlgos.selectionLayer1.electronCountFilter_cfi")
+process.selectedIDIsoMuons = cms.EDFilter("CandPtrSelector", src = cms.InputTag("slimmedMuons"), cut = cms.string('''abs(eta)<2.5 && pt>5. &&
+   (pfIsolationR04().sumChargedHadronPt+
+   max(0.,pfIsolationR04().sumNeutralHadronEt+
+   pfIsolationR04().sumPhotonEt-
+   0.50*pfIsolationR04().sumPUPt))/pt < 0.20 &&
+   (isPFMuon && (isGlobalMuon || isTrackerMuon) )'''))
+process.selectedIDMuons = cms.EDFilter("CandPtrSelector", src = cms.InputTag("slimmedMuons"), cut = cms.string('''abs(eta)<2.5 && pt>5. &&
+   (isPFMuon && (isGlobalMuon || isTrackerMuon) )'''))
+process.selectedIDIsoElectrons = cms.EDFilter("CandPtrSelector", src = cms.InputTag("slimmedElectrons"), cut = cms.string('''abs(eta)<2.5 && pt>5. &&
+   gsfTrack.isAvailable() &&
+   gsfTrack.trackerExpectedHitsInner.numberOfLostHits<2 &&
+   (pfIsolationVariables().sumChargedHadronPt+
+   max(0.,pfIsolationVariables().sumNeutralHadronEt+
+   pfIsolationVariables().sumPhotonEt-
+   0.5*pfIsolationVariables().sumPUPt))/pt < 0.20'''))
+process.selectedIDElectrons = cms.EDFilter("CandPtrSelector", src = cms.InputTag("slimmedElectrons"), cut = cms.string('''abs(eta)<2.5 && pt>5. &&
+   gsfTrack.isAvailable() &&
+   gsfTrack.trackerExpectedHitsInner.numberOfLostHits<2'''))
 
 #do projections
 process.pfCHS = cms.EDFilter("CandPtrSelector", src = cms.InputTag("packedPFCandidates"), cut = cms.string("fromPV"))
@@ -300,18 +330,20 @@ process.ra2Objects = cms.Sequence(
                                    process.htPFchs *
                                    process.mhtPFchs *
                                    process.selectedMuons *
-                                   process.selectedElectrons
+                                   process.selectedElectrons *
+                                   process.selectedIDIsoMuons * process.selectedIDMuons *
+                                   process.selectedIDIsoElectrons * process.selectedIDElectrons
                                  )
 
 process.load("PhysicsTools.PatAlgos.selectionLayer1.muonCountFilter_cfi")
 process.load("PhysicsTools.PatAlgos.selectionLayer1.electronCountFilter_cfi")
 
 process.countPFMuonsIDIso = process.countPatMuons.clone()
-process.countPFMuonsIDIso.src = cms.InputTag('selectedMuons')
+process.countPFMuonsIDIso.src = cms.InputTag('selectedIDIsoMuons')
 process.countPFMuonsIDIso.minNumber = cms.uint32(1)
 
 process.countPFElectronsIDIso = process.countPatElectrons.clone()
-process.countPFElectronsIDIso.src = cms.InputTag('selectedElectrons')
+process.countPFElectronsIDIso.src = cms.InputTag('selectedIDIsoElectrons')
 process.countPFElectronsIDIso.minNumber = cms.uint32(1)
 
 process.ra2PFMuonVeto = cms.Sequence( ~process.countPFMuonsIDIso )
@@ -530,10 +562,10 @@ process.histAndTree.genParticleSrc      = cms.InputTag("prunedGenParticles")
 
 process.stdStop_histAndTree = process.histAndTree.clone()
 process.stdStop_histAndTree.nLeptonsSels       = cms.vint32(-1, -1)
-process.stdStop_histAndTree.muonSrc            = cms.InputTag("slimmedMuons")
-process.stdStop_histAndTree.forVetoMuonSrc     = cms.InputTag("slimmedMuons")
-process.stdStop_histAndTree.eleSrc             = cms.InputTag("slimmedElectrons")
-process.stdStop_histAndTree.forVetoElectronSrc = cms.InputTag("slimmedElectrons")
+process.stdStop_histAndTree.muonSrc            = cms.InputTag("selectedIDIsoMuons")
+process.stdStop_histAndTree.forVetoMuonSrc     = cms.InputTag("selectedIDIsoMuons")
+process.stdStop_histAndTree.eleSrc             = cms.InputTag("selectedIDIsoElectrons")
+process.stdStop_histAndTree.forVetoElectronSrc = cms.InputTag("selectedIDIsoElectrons")
 process.stdStop_histAndTree.forVetoIsoTrkSrc   = cms.InputTag("")
 process.stdStop_histAndTree.outRootName        = cms.string("StdStop.root")
 #process.stdStop_histAndTree.jetSrc             = cms.InputTag("stopJetsPFchsPt30")
@@ -544,14 +576,18 @@ process.stdStop_histAndTree.dPhis_CUT_vec_Src  = cms.InputTag("jetMHTDPhiForSkim
 process.stdStop_histAndTree.nJets_CUT_Src      = cms.InputTag("nJetsForSkimsStop:nJets")
 process.stdStop_histAndTree.mht_forSgnfSrc     = cms.InputTag("slimmedMETs")
 process.stdStop_histAndTree.doFillTree         = cms.bool(True)
+process.stdStop_histAndTree.groomedJetSrc      = cms.InputTag("groomProdak5:groomedJets")
+process.stdStop_histAndTree.groomedJetIdxSrc   = cms.InputTag("groomProdak5:groomedJetsIdx")
 process.stdStop_histAndTree.debug              = cms.bool(options.debug)
 
 process.ak4Stop_histAndTree = process.stdStop_histAndTree.clone()
-process.ak4Stop_histAndTree.jetSrc                = cms.InputTag("ak4patJetsPFchsPt10")
+process.ak4Stop_histAndTree.jetSrc             = cms.InputTag("ak4patJetsPFchsPt10")
 process.ak4Stop_histAndTree.mhtSrc             = cms.InputTag("ak4stopmhtPFchs")
 process.ak4Stop_histAndTree.htSrc              = cms.InputTag("ak4stophtPFchs")
 process.ak4Stop_histAndTree.dPhis_CUT_vec_Src  = cms.InputTag("ak4jetMHTDPhiForSkimsStop:jetMHTDPhiVec")
 process.ak4Stop_histAndTree.nJets_CUT_Src      = cms.InputTag("ak4nJetsForSkimsStop:nJets")
+process.ak4Stop_histAndTree.groomedJetSrc      = cms.InputTag("groomProdak4:groomedJets")
+process.ak4Stop_histAndTree.groomedJetIdxSrc   = cms.InputTag("groomProdak4:groomedJetsIdx")
 #process.ak4Stop_histAndTree.genJetsInputTags = cms.VInputTag(
 #                                                         cms.InputTag("myak4GenJetsNoNu"),
 #                                                         cms.InputTag("myak4GenJetsNoNuNoStopDecays"),
@@ -578,8 +614,20 @@ process.smsModelFilter.SusyScanLSPMass    = cms.double(options.smsDaughterMass)
 process.smsModelFilter.SusyScanFracLSP    = cms.double(0.0)
 process.smsModelFilter.Debug              = cms.bool(options.debug)
 
+process.load("AllHadronicSUSY.TopTagger.groomProd_cfi")
+process.groomProdak5 = process.groomProd.clone()
+process.groomProdak5.jetSrc = cms.InputTag("patJetsPFchsPt10")
+process.groomProdak5.groomingOpt = cms.untracked.int32(1)
+#process.groomProdak5.debug = cms.untracked.bool(options.debug)
+
+process.groomProdak4 = process.groomProd.clone()
+process.groomProdak4.jetSrc = cms.InputTag("ak4patJetsPFchsPt10")
+process.groomProdak4.groomingOpt = cms.untracked.int32(1)
+#process.groomProdak4.debug = cms.untracked.bool(options.debug)
+
 process.StdStop_DirectionalLeptonVeto_Path = cms.Path(
                                    process.comb_seq *
+                                   process.groomProdak5 * process.groomProdak4 *
                                    process.stdStop_histAndTree * process.ak4Stop_histAndTree *
                                    process.ra2PFMuonVeto * process.ra2PFElectronVeto *
                                    process.count2JetsPFchsPt70Eta24Std *
@@ -617,6 +665,6 @@ file.close()
 #    fileName = cms.untracked.string('test.root'),
 ##    outputCommands = cms.untracked.vstring(['drop *','keep patJets_patJetsAK5PF_*_*','keep patJets_patJetsAK5PFCHS_*_*','keep *_*_*_PAT'])
 #    outputCommands = cms.untracked.vstring(['drop *','keep patJets_patJetsAK5PF_*_*','keep patJets_patJetsAK5PFCHS_*_*','keep *_*_*_PAT', 'keep *_pfMet_*_*', 'keep *_patMETs_*_*'])
-##    outputCommands = cms.untracked.vstring(['keep *_*_*_*'])
+#    outputCommands = cms.untracked.vstring(['keep *_*_*_*'])
 #)
 #process.endpath= cms.EndPath(process.OUT)
