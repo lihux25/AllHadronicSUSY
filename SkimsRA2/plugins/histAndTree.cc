@@ -101,18 +101,18 @@ class histAndTree : public edm::EDFilter{
     virtual void loadRecoJets(const edm::Event& iEvent);
 
     edm::InputTag muonSrc_;
-    edm::Handle<edm::View<reco::Muon > > muons;
+    edm::Handle<edm::View<reco::Candidate> > muons;
     edm::InputTag eleSrc_;
 //    edm::Handle<edm::View<pat::Electron > > electrons;
-    edm::Handle<edm::View<reco::GsfElectron> > electrons;
+    edm::Handle<edm::View<reco::Candidate> > electrons;
     edm::InputTag tauSrc_;
     edm::Handle<edm::View<pat::Tau > > taus;
     size nMuons, nElectrons, nTaus;
     edm::InputTag forVetoMuonSrc_;
-    edm::Handle<edm::View<reco::Muon > > forVetoMuons;
+    edm::Handle<edm::View<reco::Candidate> > forVetoMuons;
     edm::InputTag forVetoElectronSrc_;
 //    edm::Handle<edm::View<pat::Electron > > forVetoElectrons;
-    edm::Handle<edm::View<reco::GsfElectron> > forVetoElectrons;
+    edm::Handle<edm::View<reco::Candidate> > forVetoElectrons;
     size nMuonsForVeto, nElectronsForVeto;
     reco::Muon muon1, muon2; int muon1Charge, muon2Charge;
     pat::Electron ele1, ele2; int ele1Charge, ele2Charge;
@@ -694,12 +694,12 @@ bool histAndTree::filter(edm::Event& iEvent, const edm::EventSetup& iSetup) {
 
    double mtw = -1, type1mtw = -1;
    if( nMuons == 1 ){
-      mtw = sqrt( 2*( (*met)[0].pt()*muon1.pt() -( (*met)[0].px()*muon1.px() + (*met)[0].py()*muon1.py() ) ) ); 
-      type1mtw = sqrt( 2*( (*type1met)[0].pt()*muon1.pt() -( (*type1met)[0].px()*muon1.px() + (*type1met)[0].py()*muon1.py() ) ) ); 
+      mtw = sqrt( 2*( (*met)[0].pt()*(*muons)[0].pt() -( (*met)[0].px()*(*muons)[0].px() + (*met)[0].py()*(*muons)[0].py() ) ) ); 
+      type1mtw = sqrt( 2*( (*type1met)[0].pt()*(*muons)[0].pt() -( (*type1met)[0].px()*(*muons)[0].px() + (*type1met)[0].py()*(*muons)[0].py() ) ) ); 
    }
    if( nMuons ==2 && muon1Charge*muon2Charge == -1 ){
-      mtw = sqrt( 2*( muon2.pt()*muon1.pt() -( muon2.px()*muon1.px() + muon2.py()*muon1.py() ) ) );
-      type1mtw = sqrt( 2*( muon2.pt()*muon1.pt() -( muon2.px()*muon1.px() + muon2.py()*muon1.py() ) ) );
+      mtw = sqrt( 2*( (*muons)[1].pt()*(*muons)[0].pt() -( (*muons)[1].px()*(*muons)[0].px() + (*muons)[1].py()*(*muons)[0].py() ) ) );
+      type1mtw = sqrt( 2*( (*muons)[1].pt()*(*muons)[0].pt() -( (*muons)[1].px()*(*muons)[0].px() + (*muons)[1].py()*(*muons)[0].py() ) ) );
    }
 
    mht_TR = (*mht)[0].pt(); ht_TR = (*ht); met_TR = (*met)[0].pt(); type1met_TR = (*type1met)[0].pt(); mt_TR = mtw; type1mt_TR = type1mtw;
@@ -945,10 +945,10 @@ bool histAndTree::filter(edm::Event& iEvent, const edm::EventSetup& iSetup) {
       muonsAux_TR->push_back( (*muons)[im].charge() );
 
       if( im == 0){
-         mu1pt_TR = muon1.pt(); mu1eta_TR = muon1.eta(); mu1phi_TR = muon1.phi();
+         mu1pt_TR = (*muons)[0].pt(); mu1eta_TR = (*muons)[0].eta(); mu1phi_TR = (*muons)[0].phi();
       }
       if( im == 1){
-         mu2pt_TR = muon2.pt(); mu2eta_TR = muon2.eta(); mu2phi_TR = muon2.phi();
+         mu2pt_TR = (*muons)[1].pt(); mu2eta_TR = (*muons)[1].eta(); mu2phi_TR = (*muons)[1].phi();
       }
       if( im >1 ){
          otherMuspt_TR->push_back((*muons)[im].pt()); otherMuseta_TR->push_back((*muons)[im].eta()); otherMusphi_TR->push_back((*muons)[im].phi());
@@ -962,10 +962,10 @@ bool histAndTree::filter(edm::Event& iEvent, const edm::EventSetup& iSetup) {
       elesAux_TR->push_back( (*electrons)[ie].charge() );
 
       if( ie == 0){
-         ele1pt_TR = ele1.pt(); ele1eta_TR = ele1.eta(); ele1phi_TR = ele1.phi();
+         ele1pt_TR = (*electrons)[ie].pt(); ele1eta_TR = (*electrons)[ie].eta(); ele1phi_TR = (*electrons)[ie].phi();
       }
       if( ie == 1){
-         ele2pt_TR = ele2.pt(); ele2eta_TR = ele2.eta(); ele2phi_TR = ele2.phi();
+         ele2pt_TR = (*electrons)[ie].pt(); ele2eta_TR = (*electrons)[ie].eta(); ele2phi_TR = (*electrons)[ie].phi();
       }
       if( ie >1 ){
          otherElespt_TR->push_back((*electrons)[ie].pt()); otherEleseta_TR->push_back((*electrons)[ie].eta()); otherElesphi_TR->push_back((*electrons)[ie].phi());
@@ -1097,18 +1097,22 @@ void histAndTree::loadLeptons(const edm::Event& iEvent){
    iEvent.getByLabel(forVetoIsoTrkSrc_, forVetoIsoTrks); if( forVetoIsoTrks.isValid() ) nIsoTrksForVeto = forVetoIsoTrks->size(); else nIsoTrksForVeto =0;
 
    for( size im=0; im<nMuons; im++){
-      if( im ==0 ){ muon1 = (*muons)[im]; muon2 = (*muons)[im]; }
-      if( im ==1 ) muon2 = (*muons)[im];
+//      if( im ==0 ){ muon1 = (*muons)[im]; muon2 = (*muons)[im]; }
+//      if( im ==1 ) muon2 = (*muons)[im];
+      if( im ==0 ){ muon1Charge = (*muons)[im].charge(); muon2Charge = (*muons)[im].charge(); }
+      if( im ==1 ) muon2Charge = (*muons)[im].charge();
    }
 
-   muon1Charge = muon1.charge(); muon2Charge = muon2.charge();
+//   muon1Charge = muon1.charge(); muon2Charge = muon2.charge();
 
    for( size ie=0; ie<nElectrons; ie++){
-      if( ie ==0 ){ ele1 = (*electrons)[ie]; ele2 = (*electrons)[ie]; }
-      if( ie ==1 ) ele2 = (*electrons)[ie];
+//      if( ie ==0 ){ ele1 = (*electrons)[ie]; ele2 = (*electrons)[ie]; }
+//      if( ie ==1 ) ele2 = (*electrons)[ie];
+      if( ie ==0 ){ ele1Charge = (*electrons)[ie].charge(); ele2Charge = (*electrons)[ie].charge(); }
+      if( ie ==1 ) ele2Charge = (*electrons)[ie].charge();
    }
 
-   ele1Charge = ele1.charge(); ele2Charge = ele2.charge();
+//   ele1Charge = ele1.charge(); ele2Charge = ele2.charge();
 
 }
 
