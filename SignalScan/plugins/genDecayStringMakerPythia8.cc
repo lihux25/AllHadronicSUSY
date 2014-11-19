@@ -105,6 +105,16 @@ bool genDecayStringMakerPythia8::select( const reco::Candidate & c ) const {
            momCand = momCand->mother(0);
         }
         if( selectExtra( (*momCand) ) ) selected = true;
+     }else if( momCand->numberOfMothers() == 1){
+// Look at grand mother for another chance.  The decay could be tau+ -> a_1+ -> pi0 pi0 pi+.
+// If we'd like to catch the pi0 or pi+, we need look at grand mother.
+        const reco::Candidate * grandMomCand = momCand->mother(0);
+        if( abs(grandMomCand->pdgId()) == 15 && grandMomCand->status() == 2 ){
+           while( abs(grandMomCand->pdgId()) == 15 && grandMomCand->numberOfMothers() == 1 ){
+              grandMomCand = grandMomCand->mother(0);
+           }
+           if( selectExtra( (*grandMomCand) ) ) selected = true;
+        }
      }
   }
 
