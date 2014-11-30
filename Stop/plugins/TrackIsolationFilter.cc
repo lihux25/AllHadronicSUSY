@@ -46,6 +46,8 @@
 #include "DataFormats/Math/interface/deltaR.h"
 #include "DataFormats/Math/interface/deltaPhi.h"
 
+#include "DataFormats/PatCandidates/interface/PackedCandidate.h"
+
 #include "TMath.h"
 #include "TLorentzVector.h"
 #include "TTree.h"
@@ -73,11 +75,12 @@ TrackIsolationFilter::TrackIsolationFilter(const edm::ParameterSet& iConfig) {
   isoCut_           = iConfig.getParameter<double>          ("isoCut"); // isolation cut value
   doTrkIsoVeto_     = iConfig.getParameter<bool>            ("doTrkIsoVeto");
 
-  produces<std::vector<reco::PFCandidate> >(""); 
-  produces<vector<float> >("pfcandstrkiso").setBranchAlias("pfcands_trkiso");
-  produces<vector<float> >("pfcandsdzpv"  ).setBranchAlias("pfcands_dzpv");
-  produces<vector<float> >("pfcandspt"    ).setBranchAlias("pfcands_pt");
-  produces<vector<int>   >("pfcandschg"   ).setBranchAlias("pfcands_chg");
+  produces<std::vector<pat::PackedCandidate> >(""); 
+  produces<vector<double> >("pfcandstrkiso").setBranchAlias("pfcands_trkiso");
+  produces<vector<double> >("pfcandsdzpv"  ).setBranchAlias("pfcands_dzpv");
+  produces<vector<double> >("pfcandspt"    ).setBranchAlias("pfcands_pt");
+  produces<vector<double> >("pfcandschg"   ).setBranchAlias("pfcands_chg");
+  produces<int>("Isotracksize").setBranchAlias("Isotrack_size");
 
 }
 
@@ -89,16 +92,17 @@ TrackIsolationFilter::~TrackIsolationFilter() {
 
 bool TrackIsolationFilter::filter(edm::Event& iEvent, const edm::EventSetup& iSetup) {
 
-  auto_ptr<vector<float> >  pfcands_trkiso(new vector<float>);
-  auto_ptr<vector<float> >  pfcands_dzpv  (new vector<float>);
-  auto_ptr<vector<float> >  pfcands_pt    (new vector<float>);
-  auto_ptr<vector<int>   >  pfcands_chg   (new vector<int>  );
+  auto_ptr<vector<double> >  pfcands_trkiso(new vector<double>);
+  auto_ptr<vector<double> >  pfcands_dzpv  (new vector<double>);
+  auto_ptr<vector<double> >  pfcands_pt    (new vector<double>);
+  auto_ptr<vector<double> >  pfcands_chg   (new vector<double>);
+  auto_ptr<int> Isotrack_size (new int);
 
   //---------------------------------
   // get PFCandidate collection
   //---------------------------------
   
-  edm::Handle<PFCandidateCollection> pfCandidatesHandle;
+  edm::Handle<pat::PackedCandidateCollection> pfCandidatesHandle;
   iEvent.getByLabel(pfCandidatesTag_, pfCandidatesHandle);
 
   //---------------------------------
@@ -116,24 +120,27 @@ bool TrackIsolationFilter::filter(edm::Event& iEvent, const edm::EventSetup& iSe
   // for neutral PFCandidates, store trkiso = 999 and dzpv = 999
   //-------------------------------------------------------------------------------------------------
 
-  std::auto_ptr<std::vector<reco::PFCandidate> > prod(new std::vector<reco::PFCandidate>());
+  std::auto_ptr<std::vector<pat::PackedCandidate> > prod(new std::vector<pat::PackedCandidate>());
 
   if( vertices->size() > 0) {
 
-     for( PFCandidateCollection::const_iterator pf_it = pfCandidatesHandle->begin(); pf_it != pfCandidatesHandle->end(); pf_it++ ) {
+     for( pat::PackedCandidateCollection::const_iterator pf_it = pfCandidatesHandle->begin(); pf_it != pfCandidatesHandle->end(); pf_it++ ) {
 
         //-------------------------------------------------------------------------------------
         // only store PFCandidate values if pt > minPt
         //-------------------------------------------------------------------------------------
+
+// to save space, only store charged particles
+        if( pf_it->charge() != 0 ){
+           pfcands_pt->push_back(pf_it->pt());
+           pfcands_chg->push_back(pf_it->charge());
+        }
 
         if( pf_it->pt() < minPt_ ) continue;
 
         //-------------------------------------------------------------------------------------
         // store pt and charge of PFCandidate
         //-------------------------------------------------------------------------------------
-
-        pfcands_pt->push_back(pf_it->pt());
-        pfcands_chg->push_back(pf_it->charge());
 
         //-------------------------------------------------------------------------------------
         // if there's no good vertex in the event, we can't calculate anything so store 999999
@@ -149,9 +156,9 @@ bool TrackIsolationFilter::filter(edm::Event& iEvent, const edm::EventSetup& iSe
            // now loop over other PFCandidates in the event to calculate trackIsolation
            //----------------------------------------------------------------------------
 
-           float trkiso = 0.0;
+           double trkiso = 0.0;
 
-           for( PFCandidateCollection::const_iterator pf_other = pfCandidatesHandle->begin(); pf_other != pfCandidatesHandle->end(); pf_other++ ) {
+           for( pat::PackedCandidateCollection::const_iterator pf_other = pfCandidatesHandle->begin(); pf_other != pfCandidatesHandle->end(); pf_other++ ) {
 
               // don't count the PFCandidate in its own isolation sum
               if( pf_it == pf_other       ) continue;
@@ -160,15 +167,16 @@ bool TrackIsolationFilter::filter(edm::Event& iEvent, const edm::EventSetup& iSe
 	      if( pf_other->charge() == 0 ) continue;
 
               // cut on dR between the PFCandidates
-              float dR = deltaR(pf_it->eta(), pf_it->phi(), pf_other->eta(), pf_other->phi());
+              double dR = deltaR(pf_it->eta(), pf_it->phi(), pf_other->eta(), pf_other->phi());
               if( dR > dR_ ) continue;
 
 	      // cut on the PFCandidate dz
-	      float dz_other = 100;
+	      double dz_other = 100;
 
-	      if ( pf_other->trackRef().isNonnull()) {
-	         dz_other = pf_other->trackRef()->dz(vtxpos);
-	      }
+//	      if ( pf_other->bestTrack() ) {
+//	         dz_other = pf_other->bestTrack()->dz(vtxpos);
+	         dz_other = pf_other->pseudoTrack().dz(vtxpos);
+//	      }
 
 	      if( fabs(dz_other) > dzcut_ ) continue;
 
@@ -176,30 +184,29 @@ bool TrackIsolationFilter::filter(edm::Event& iEvent, const edm::EventSetup& iSe
            }
 
            // calculate the dz of this candidate
-           float dz_it = 100; //
+           double dz_it = 100; //
 
-           if ( pf_it->trackRef().isNonnull()) {
-              dz_it = pf_it->trackRef()->dz(vtxpos);
-           }
-
-           // store trkiso and dz values
-           pfcands_trkiso->push_back(trkiso);
-           pfcands_dzpv->push_back(dz_it);
+//           if ( pf_it->bestTrack() ){
+//              dz_it = pf_it->bestTrack()->dz(vtxpos);
+              dz_it = pf_it->pseudoTrack().dz(vtxpos);
+//           }
 
            if( trkiso/pf_it->pt() > isoCut_ ) continue;
            if( std::abs(dz_it) > dzcut_ ) continue;
 
+           // store trkiso and dz values
+           pfcands_dzpv->push_back(dz_it);
+           pfcands_trkiso->push_back(trkiso);
            prod->push_back( (*pf_it) );
 
         }else{
            //neutral particle, set trkiso and dzpv to 9999
-           pfcands_trkiso->push_back(9999);
-           pfcands_dzpv->push_back(9999);
         }
 
      }
       
   }
+  *Isotrack_size = prod->size();
 
   bool result = (doTrkIsoVeto_ ? (prod->size() == 0) : true);
 
@@ -210,6 +217,7 @@ bool TrackIsolationFilter::filter(edm::Event& iEvent, const edm::EventSetup& iSe
   iEvent.put(pfcands_chg   ,"pfcandschg"   );
 
   iEvent.put(prod);
+  iEvent.put(Isotrack_size, "Isotracksize");
 
   return result;
 }

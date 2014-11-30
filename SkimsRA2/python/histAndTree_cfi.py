@@ -7,7 +7,6 @@ histAndTree = cms.EDFilter('histAndTree',
    
    forVetoMuonSrc      = cms.InputTag("myPatMuonsPFIDIso"),
    forVetoElectronSrc  = cms.InputTag("patElectronsIDIso"),
-   forVetoIsoTrkSrc    = cms.InputTag("trackIsolation"),
 
    genJetSrc           = cms.InputTag("ak5GenJets"),
    genMETSrc           = cms.InputTag("genMetCalo"),
@@ -61,4 +60,12 @@ histAndTree = cms.EDFilter('histAndTree',
 
    groomedJetSrc = cms.InputTag(""),
    groomedJetIdxSrc = cms.InputTag(""),
+
+   forVetoIsoTrkSrc = cms.InputTag("trackIsolation"),
+   pfCandSrc = cms.InputTag("packedPFCandidates"),
+   isotrk_dR = cms.double(0.5),
+   isotrk_dz = cms.double(0.15),
+   loose_isoTrkSrc = cms.InputTag("loosetrackIsolation"),
+   loose_isotrk_isoVecSrc = cms.InputTag("loosetrackIsolation:pfcandstrkiso"),
+   loose_isotrk_dzpvVecSrc = cms.InputTag("loosetrackIsolation:pfcandsdzpv"),
 )                               

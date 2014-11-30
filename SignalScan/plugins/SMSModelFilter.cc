@@ -118,23 +118,23 @@ bool SMSModelFilter::filter(edm::Event& iEvent, const edm::EventSetup& iSetup) {
       smaller = smaller.substr(found+1,smaller.size());
       std::istringstream iss(smaller);
 
-      if(susyScanTopology_=="T5ZZ" || susyScanTopology_=="T2bW") {
-	iss >> xCHI;
-	iss.clear();
-	found = smaller.find("_");
-	smaller = smaller.substr(found+1,smaller.size());
-	iss.str(smaller);
-	
+      if(susyScanTopology_=="T5ZZ" || susyScanTopology_=="T2bw") {
 	iss >> mGL;
 	iss.clear();
-	
+
 	found = smaller.find("_");
 	smaller = smaller.substr(found+1,smaller.size());
 	iss.str(smaller);
 	iss >> mLSP;
 	iss.clear();
+	
+	found = smaller.find("_");
+	smaller = smaller.substr(found+1,smaller.size());
+	iss.str(smaller);
+	iss >> xCHI;
+	iss.clear();
 
-      } else if (susyScanTopology_=="T2" || susyScanTopology_=="T2tt" || susyScanTopology_ == "T2tb" || susyScanTopology_=="T1" || susyScanTopology_=="T1tttt") {
+      } else if (susyScanTopology_=="T2" || susyScanTopology_=="T2tt" || susyScanTopology_ == "T2tb" || susyScanTopology_=="T1" || susyScanTopology_=="T1tttt" || susyScanTopology_=="T1bbbb" || susyScanTopology_=="T1qqqq" || susyScanTopology_=="T2qq" ) {
 	iss >> mGL;
 	iss.clear();
 	

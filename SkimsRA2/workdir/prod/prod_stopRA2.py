@@ -103,6 +103,22 @@ else:
        '/store/user/lpccsa14/SMS-T1tttt_2J_mGl-1500_mLSP-100_Tune4C_13TeV-madgraph-tauola/Spring14dr-PU_S14_POSTLS170_V6AN1-miniAOD706p1/140716_120211/0000/miniAOD-prod_PAT_6.root',
        '/store/user/lpccsa14/SMS-T1tttt_2J_mGl-1500_mLSP-100_Tune4C_13TeV-madgraph-tauola/Spring14dr-PU_S14_POSTLS170_V6AN1-miniAOD706p1/140716_120211/0000/miniAOD-prod_PAT_7.root',
        '/store/user/lpccsa14/SMS-T1tttt_2J_mGl-1500_mLSP-100_Tune4C_13TeV-madgraph-tauola/Spring14dr-PU_S14_POSTLS170_V6AN1-miniAOD706p1/140716_120211/0000/miniAOD-prod_PAT_8.root'
+
+#       '/store/results/top/StoreResults/TTJets_MSDecaysCKM_central_Tune4C_13TeV-madgraph-tauola/USER/Spring14dr_PU_S14_POSTLS170_V6AN1_miniAOD706p1_814812ec83fce2f620905d2bb30e9100-v2/00000/0012F41F-FA17-E411-A1FF-0025905A48B2.root',
+#       '/store/results/top/StoreResults/TTJets_MSDecaysCKM_central_Tune4C_13TeV-madgraph-tauola/USER/Spring14dr_PU_S14_POSTLS170_V6AN1_miniAOD706p1_814812ec83fce2f620905d2bb30e9100-v2/00000/0021F32B-FE17-E411-9C50-003048D15DF0.root',
+#       '/store/results/top/StoreResults/TTJets_MSDecaysCKM_central_Tune4C_13TeV-madgraph-tauola/USER/Spring14dr_PU_S14_POSTLS170_V6AN1_miniAOD706p1_814812ec83fce2f620905d2bb30e9100-v2/00000/0037C07D-FB17-E411-8784-002590596486.root',
+#       '/store/results/top/StoreResults/TTJets_MSDecaysCKM_central_Tune4C_13TeV-madgraph-tauola/USER/Spring14dr_PU_S14_POSTLS170_V6AN1_miniAOD706p1_814812ec83fce2f620905d2bb30e9100-v2/00000/0226DF39-FD17-E411-A8D4-002618943948.root',
+#       '/store/results/top/StoreResults/TTJets_MSDecaysCKM_central_Tune4C_13TeV-madgraph-tauola/USER/Spring14dr_PU_S14_POSTLS170_V6AN1_miniAOD706p1_814812ec83fce2f620905d2bb30e9100-v2/00000/02939B76-FB17-E411-A703-0025905B85AA.root',
+
+#       '/store/results/susy/StoreResults/ZJetsToNuNu_HT-200to400_Tune4C_13TeV-madgraph-tauola/USER/Spring14dr_PU_S14_POSTLS170_V6AN1_miniAOD706p1_814812ec83fce2f620905d2bb30e9100-v1/00000/0067608D-4C1E-E411-9CBE-0025905A60F8.root',
+#       '/store/results/susy/StoreResults/ZJetsToNuNu_HT-200to400_Tune4C_13TeV-madgraph-tauola/USER/Spring14dr_PU_S14_POSTLS170_V6AN1_miniAOD706p1_814812ec83fce2f620905d2bb30e9100-v1/00000/006FC287-4C1E-E411-8957-0025905A6136.root',
+
+#       '/store/user/lpccsa14/DYJetsToLL_M-50_HT-600toInf_Tune4C_13TeV-madgraph-tauola/Spring14dr-PU_S14_POSTLS170_V6AN1-miniAOD706p1/140716_210420/0000/miniAOD-prod_PAT_1.root',
+#       '/store/user/lpccsa14/DYJetsToLL_M-50_HT-600toInf_Tune4C_13TeV-madgraph-tauola/Spring14dr-PU_S14_POSTLS170_V6AN1-miniAOD706p1/140716_210420/0000/miniAOD-prod_PAT_10.root',
+
+#       '/store/results/susy/StoreResults/WJetsToLNu_HT-600toInf_Tune4C_13TeV-madgraph-tauola/USER/Spring14dr_PU_S14_POSTLS170_V6AN1_miniAOD706p1_814812ec83fce2f620905d2bb30e9100-v1/00000/00E4EF5B-4E1E-E411-992A-0025905A60F8.root',
+#       '/store/results/susy/StoreResults/WJetsToLNu_HT-600toInf_Tune4C_13TeV-madgraph-tauola/USER/Spring14dr_PU_S14_POSTLS170_V6AN1_miniAOD706p1_814812ec83fce2f620905d2bb30e9100-v1/00000/06AC1A64-4D1E-E411-80F3-0025905A60F4.root',
+
    ]
 
 process.maxEvents.input = options.maxEvents
@@ -412,11 +428,15 @@ process.ak5PFchsL1FastL2L3         = ak5PFL1FastL2L3Residual.clone( correctors =
 process.ak5PFchsL1FastL2L3Residual = ak5PFL1FastL2L3Residual.clone( correctors = cms.vstring('ak5PFchsL1Fastjet', 'ak5PFchsL2Relative', 'ak5PFchsL3Absolute', 'ak5PFchsResidual') )
 process.ak5PFchsL2L3               = ak5PFL1FastL2L3Residual.clone( correctors = cms.vstring('ak5PFchsL2Relative', 'ak5PFchsL3Absolute') )
 
+# Default is dR = 0.3, dz < 0.05, pt > 10, reliso < 0.1
 process.load("AllHadronicSUSY.Stop.trackIsolationMaker_cfi")
 process.trackIsolation = process.trackIsolationFilter.clone()
 process.trackIsolation.pfCandidatesTag = cms.InputTag("packedPFCandidates")
 process.trackIsolation.doTrkIsoVeto = cms.bool(False)
-process.trackIsolation.minPt_PFCandidate = cms.double(5.0)
+
+process.loosetrackIsolation = process.trackIsolation.clone()
+process.loosetrackIsolation.minPt_PFCandidate = cms.double(5.0)
+process.loosetrackIsolation.isoCut            = cms.double(0.5)
 
 process.load('AllHadronicSUSY.Stop.StopJets_drt_from_AOD_cff')
 
@@ -464,7 +484,7 @@ process.comb_seq = cms.Sequence(
 # hlt requirement
    process.hltFilter *
    process.weightProducer *
-#   process.trackIsolation *
+   process.trackIsolation * process.loosetrackIsolation *
    process.stopPFJets * process.stopBJets *
    process.prepareCutVars_seq
 )
@@ -566,7 +586,8 @@ process.stdStop_histAndTree.muonSrc            = cms.InputTag("selectedIDIsoMuon
 process.stdStop_histAndTree.forVetoMuonSrc     = cms.InputTag("selectedIDIsoMuons")
 process.stdStop_histAndTree.eleSrc             = cms.InputTag("selectedIDIsoElectrons")
 process.stdStop_histAndTree.forVetoElectronSrc = cms.InputTag("selectedIDIsoElectrons")
-process.stdStop_histAndTree.forVetoIsoTrkSrc   = cms.InputTag("")
+process.stdStop_histAndTree.loose_isoTrkSrc    = cms.InputTag("loosetrackIsolation")
+process.stdStop_histAndTree.forVetoIsoTrkSrc   = cms.InputTag("trackIsolation")
 process.stdStop_histAndTree.outRootName        = cms.string("StdStop.root")
 #process.stdStop_histAndTree.jetSrc             = cms.InputTag("stopJetsPFchsPt30")
 process.stdStop_histAndTree.jetSrc             = cms.InputTag("patJetsPFchsPt10")
@@ -628,7 +649,8 @@ process.groomProdak4.groomingOpt = cms.untracked.int32(1)
 process.StdStop_DirectionalLeptonVeto_Path = cms.Path(
                                    process.comb_seq *
                                    process.groomProdak5 * process.groomProdak4 *
-                                   process.stdStop_histAndTree * process.ak4Stop_histAndTree *
+#                                   process.stdStop_histAndTree * process.ak4Stop_histAndTree *
+                                   process.ak4Stop_histAndTree *
                                    process.ra2PFMuonVeto * process.ra2PFElectronVeto *
                                    process.count2JetsPFchsPt70Eta24Std *
                                    process.count4JetsPFchsPt50Eta24Std *

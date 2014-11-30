@@ -118,10 +118,6 @@ class histAndTree : public edm::EDFilter{
     pat::Electron ele1, ele2; int ele1Charge, ele2Charge;
     virtual void loadLeptons(const edm::Event& iEvent);
 
-    edm::InputTag forVetoIsoTrkSrc_;
-    edm::Handle<edm::View<reco::PFCandidate> > forVetoIsoTrks;
-    size nIsoTrksForVeto;
-
     edm::InputTag photonSrc_;
     edm::Handle<edm::View<pat::Photon> > photons;
     size nPhotons;
@@ -188,9 +184,6 @@ class histAndTree : public edm::EDFilter{
     double jet3pt_TR, jet3eta_TR, jet3phi_TR, jet3energy_TR;
     std::vector<double> *otherJetspt_TR, *otherJetseta_TR, *otherJetsphi_TR, *otherJetsenergy_TR;
     std::vector<TLorentzVector> *jetsLVec_TR;
-    std::vector<TLorentzVector> *forVetoIsoTrksLVec_TR;
-    std::vector<std::vector<double> > *forVetoIsoTrksAuxVec_TR;
-    std::vector<int> *forVetoIsoTrksConsMatchedJetIdxVec_TR;
     std::vector<TLorentzVector> *groomedJetsLVec_TR;
 
     double mu1pt_TR, mu1eta_TR, mu1phi_TR;
@@ -264,6 +257,13 @@ class histAndTree : public edm::EDFilter{
     std::vector<std::string> * genDecayStrVec_TR;
     std::vector<int> * genDecayIdxVec_TR, * genDecayPdgIdVec_TR, * genDecayMomIdxVec_TR;
     std::vector<TLorentzVector> * genDecayLVec_TR;
+    int find_idx(const reco::Candidate & target);
+    bool find_mother(int momPdgId, int dauIdx, const vector<int> &genDecayIdxVec, const vector<int> &genDecayMomIdxVec, const vector<int> &genDecayPdgIdVec);
+    bool find_mother(int momIdx, int dauIdx, const vector<int> &genDecayIdxVec, const vector<int> &genDecayMomIdxVec);
+    void find_mother(std::vector<int> & momIdxVec, int dauIdx, const vector<int> &genDecayIdxVec, const vector<int> &genDecayMomIdxVec);
+    int find_idx(int genIdx, const vector<int> &genDecayIdxVec);
+    void find_W_emu_tauprongs(std::vector<int> &W_emuVec, std::vector<int> &W_tau_emuVec, std::vector<int> &W_tau_prongsVec, const vector<int> &genDecayIdxVec, const vector<int> &genDecayMomIdxVec, const vector<int> &genDecayPdgIdVec);
+    std::vector<int> *W_emuVec_TR, *W_tau_emuVec_TR, *W_tau_prongsVec_TR;
 
 // To store SMS model parameters
     bool storeSMSmodelInfo_;
@@ -276,7 +276,24 @@ class histAndTree : public edm::EDFilter{
 // To store genjet collections
     std::vector<edm::InputTag> genJetsInputTags_;
     std::vector<std::vector<TLorentzVector> > genJetsLVec_TR;
-    int find_idx(const reco::Candidate & target);
+
+// To store isotrack information
+// The isolated tracks used for direct veto - for convenience 
+    edm::InputTag forVetoIsoTrkSrc_;
+    edm::Handle<pat::PackedCandidateCollection> forVetoIsoTrks_;
+    std::vector<int> * forVetoIsoTrkIdxVec_TR;
+    size loose_nIsoTrks, nIsoTrksForVeto;
+
+    double isotrk_dR_, isotrk_dz_;
+    edm::InputTag pfCandSrc_, loose_isoTrkSrc_, loose_isotrk_isoVecSrc_, loose_isotrk_dzpvVecSrc_;
+    edm::Handle<pat::PackedCandidateCollection> pfCandHandle_, loose_isoTrksHandle_;
+    std::vector<TLorentzVector> * trksForIsoVetoLVec_TR;
+    std::vector<std::vector<double> > * trksForIsoVetoAux_TR; // store charge, pdgId, dz, ...
+    std::vector<TLorentzVector> * loose_isoTrksLVec_TR;
+    std::vector<std::vector<double> > * loose_isoTrksAuxVec_TR;
+    std::vector<int> * loose_isoTrksConsMatchedJetIdxVec_TR;
+//    std::vector<TLorentzVector> * passed_trksForIsoVetoLVec_TR;
+//    std::vector<double> * passed_trksForIsoVetoAux_TR; // store charge, pdgId, dz, iso value, ...
 };
 
 histAndTree::histAndTree(const edm::ParameterSet & iConfig) {
@@ -360,6 +377,13 @@ histAndTree::histAndTree(const edm::ParameterSet & iConfig) {
    genJetsInputTags_ = iConfig.getParameter<std::vector<edm::InputTag> >("genJetsInputTags");
    std::cout<<"genJetsInputTags_.size : "<<genJetsInputTags_.size()<<std::endl;
 
+   pfCandSrc_        = iConfig.getParameter<edm::InputTag>("pfCandSrc");
+   isotrk_dR_        = iConfig.getParameter<double>("isotrk_dR");
+   isotrk_dz_        = iConfig.getParameter<double>("isotrk_dz");
+   loose_isoTrkSrc_  = iConfig.getParameter<edm::InputTag>("loose_isoTrkSrc");
+   loose_isotrk_isoVecSrc_ = iConfig.getParameter<edm::InputTag>("loose_isotrk_isoVecSrc");
+   loose_isotrk_dzpvVecSrc_ = iConfig.getParameter<edm::InputTag>("loose_isotrk_dzpvVecSrc");
+
    if( doTopTagger_ ) topTaggerPtr = new topTagger::type3TopTagger();
  
    otherJetspt_TR = new std::vector<double>; otherJetseta_TR = new std::vector<double>; otherJetsphi_TR = new std::vector<double>; otherJetsenergy_TR = new std::vector<double>;
@@ -389,8 +413,8 @@ histAndTree::histAndTree(const edm::ParameterSet & iConfig) {
    jetsLVec_TR = new std::vector<TLorentzVector>;
    groomedJetsLVec_TR = new std::vector<TLorentzVector>;
 
-   forVetoIsoTrksLVec_TR = new std::vector<TLorentzVector>(); forVetoIsoTrksAuxVec_TR = new std::vector<std::vector<double> >();
-   forVetoIsoTrksConsMatchedJetIdxVec_TR = new std::vector<int>();
+   loose_isoTrksLVec_TR = new std::vector<TLorentzVector>(); loose_isoTrksAuxVec_TR = new std::vector<std::vector<double> >();
+   loose_isoTrksConsMatchedJetIdxVec_TR = new std::vector<int>();
 
    muonsLVec_TR = new std::vector<TLorentzVector>; muonsAux_TR = new std::vector<double>;
    elesLVec_TR = new std::vector<TLorentzVector>; elesAux_TR = new std::vector<double>;
@@ -403,6 +427,7 @@ histAndTree::histAndTree(const edm::ParameterSet & iConfig) {
    genDecayStrVec_TR = new std::vector<std::string>;
    genDecayIdxVec_TR = new std::vector<int>; genDecayPdgIdVec_TR = new std::vector<int>; genDecayMomIdxVec_TR = new std::vector<int>;
    genDecayLVec_TR = new std::vector<TLorentzVector>;
+   W_emuVec_TR = new std::vector<int>; W_tau_emuVec_TR = new std::vector<int>; W_tau_prongsVec_TR = new std::vector<int>;
 
 // For SMS model info
    smsModelFileNameStr_TR = new std::vector<std::string>;
@@ -415,6 +440,12 @@ histAndTree::histAndTree(const edm::ParameterSet & iConfig) {
       std::vector<TLorentzVector> dummyLVec;
       genJetsLVec_TR.push_back(dummyLVec);
    }
+
+// For isotrk veto
+   forVetoIsoTrkIdxVec_TR = new std::vector<int>;
+
+   trksForIsoVetoLVec_TR = new std::vector<TLorentzVector>;
+   trksForIsoVetoAux_TR  = new std::vector<std::vector<double> >;
 
    setTreeDefaultVars();
 
@@ -438,6 +469,7 @@ histAndTree::histAndTree(const edm::ParameterSet & iConfig) {
       outTree->Branch("nMuons_CUT", &nMuonsForVeto, "nMuonsForVeto/I");
       outTree->Branch("nElectrons", &nElectrons, "nElectrons/I");
       outTree->Branch("nElectrons_CUT", &nElectronsForVeto, "nElectronsForVeto/I");
+      outTree->Branch("nIsoTrks", &loose_nIsoTrks, "loose_nIsoTrks/I");
       outTree->Branch("nIsoTrks_CUT", &nIsoTrksForVeto, "nIsoTrksForVeto/I");
       outTree->Branch("evtWeight", &evtWeight_TR, "evtWeight/D");
       outTree->Branch("mht", &mht_TR, "mht/D");
@@ -459,9 +491,6 @@ histAndTree::histAndTree(const edm::ParameterSet & iConfig) {
       outTree->Branch("mhtSgnfProb", &mhtSgnfProb_TR, "mhtSgnfProb/D");
       outTree->Branch("jetsLVec", "std::vector<TLorentzVector>", &jetsLVec_TR, 32000, 0);
       outTree->Branch("groomedJetsLVec", "std::vector<TLorentzVector>", &groomedJetsLVec_TR, 32000, 0);
-      outTree->Branch("forVetoIsoTrksLVec", "std::vector<TLorentzVector>", &forVetoIsoTrksLVec_TR, 32000, 0);
-      outTree->Branch("forVetoIsoTrksAuxVec", "std::vector<std::vector<double> >", &forVetoIsoTrksAuxVec_TR, 32000, 0);
-      outTree->Branch("forVetoIsoTrksConsMatchedJetIdxVec", "std::vector<int>", &forVetoIsoTrksConsMatchedJetIdxVec_TR, 32000, 0);
       outTree->Branch("muonsLVec", "std::vector<TLorentzVector>", &muonsLVec_TR, 32000, 0);
       outTree->Branch("muonsAux", "std::vector<double>", &muonsAux_TR, 32000, 0);
       outTree->Branch("elesLVec", "std::vector<TLorentzVector>", &elesLVec_TR, 32000, 0);
@@ -470,6 +499,13 @@ histAndTree::histAndTree(const edm::ParameterSet & iConfig) {
       outTree->Branch("dPhi1_CUT", &dPhi1_CUT, "dPhi1_CUT/D"); 
       outTree->Branch("dPhi2_CUT", &dPhi2_CUT, "dPhi2_CUT/D");
       outTree->Branch("nJets_CUT", &nJets_CUT, "nJets_CUT/I");
+
+      outTree->Branch("loose_isoTrksLVec", "std::vector<TLorentzVector>", &loose_isoTrksLVec_TR, 32000, 0);
+      outTree->Branch("loose_isoTrksAuxVec", "std::vector<std::vector<double> >", &loose_isoTrksAuxVec_TR, 32000, 0);
+      outTree->Branch("loose_isoTrksConsMatchedJetIdxVec", "std::vector<int>", &loose_isoTrksConsMatchedJetIdxVec_TR, 32000, 0);
+      outTree->Branch("forVetoIsoTrkIdxVec", "std::vector<int>", &forVetoIsoTrkIdxVec_TR, 32000, 0);
+      outTree->Branch("trksForIsoVetoLVec", "std::vector<TLorentzVector>", &trksForIsoVetoLVec_TR, 32000, 0);
+      outTree->Branch("trksForIsoVetoAux", "std::vector<std::vector<double> >", &trksForIsoVetoAux_TR, 32000, 0);
     
       if( fillGenInfo_ ){
          outTree->Branch("genJet1pt", &genJet1pt_TR, "genJet1pt/D");
@@ -540,6 +576,9 @@ histAndTree::histAndTree(const edm::ParameterSet & iConfig) {
         outTree->Branch("genDecayMomIdxVec", "std::vector<int>", &genDecayMomIdxVec_TR, 32000, 0);
         outTree->Branch("genDecayPdgIdVec", "std::vector<int>", &genDecayPdgIdVec_TR, 32000, 0);
         outTree->Branch("genDecayLVec", "std::vector<TLorentzVector>", &genDecayLVec_TR, 32000, 0);
+        outTree->Branch("W_emuVec", "std::vector<int>", &W_emuVec_TR, 32000, 0);
+        outTree->Branch("W_tau_emuVec", "std::vector<int>", &W_tau_emuVec_TR, 32000, 0);
+        outTree->Branch("W_tau_prongsVec", "std::vector<int>", &W_tau_prongsVec_TR, 32000, 0);
 
         for(unsigned int ig=0; ig<genJetsInputTags_.size(); ig++){
            sprintf(treeBranchNameStr, "genJetsLVec_%s", genJetsInputTags_[ig].label().c_str());
@@ -575,7 +614,7 @@ void histAndTree::setTreeDefaultVars(){
    otherJetspt_TR->clear(); otherJetseta_TR->clear(); otherJetsphi_TR->clear(); otherJetsenergy_TR->clear();
    jetsLVec_TR->clear();
    groomedJetsLVec_TR->clear();
-   forVetoIsoTrksLVec_TR->clear(); forVetoIsoTrksAuxVec_TR->clear(); forVetoIsoTrksConsMatchedJetIdxVec_TR->clear();
+   loose_isoTrksLVec_TR->clear(); loose_isoTrksAuxVec_TR->clear(); loose_isoTrksConsMatchedJetIdxVec_TR->clear();
 
    bestTopJetIdx_TR = -99; pickedRemainingCombfatJetIdx_TR = -99;
    remainPassCSVS_TR = false;
@@ -590,6 +629,11 @@ void histAndTree::setTreeDefaultVars(){
 
    muonsLVec_TR->clear(); elesLVec_TR->clear();
    muonsAux_TR->clear(); elesAux_TR->clear();
+ 
+   forVetoIsoTrkIdxVec_TR->clear();
+
+   trksForIsoVetoLVec_TR->clear();
+   trksForIsoVetoAux_TR->clear();
 
    dPhi0_CUT = -99, dPhi1_CUT = -99, dPhi2_CUT = -99;
    nJets_CUT = -99;
@@ -622,6 +666,8 @@ void histAndTree::setTreeDefaultVars(){
    genDecayIdxVec_TR->clear(); genDecayPdgIdVec_TR->clear(); genDecayMomIdxVec_TR->clear();
    genDecayLVec_TR->clear();
 
+   W_emuVec_TR->clear(); W_tau_emuVec_TR->clear(); W_tau_prongsVec_TR->clear();
+
    smsModelFileNameStr_TR->clear();
    smsModelStr_TR->clear();
    smsModelMotherMass_TR = -1; smsModelDaughterMass_TR = -1;
@@ -642,9 +688,9 @@ bool histAndTree::filter(edm::Event& iEvent, const edm::EventSetup& iSetup) {
    loadEventInfo(iEvent, iSetup);
 
    loadGenInfo(iEvent);
+   loadMETMHT(iEvent);
    loadRecoJets(iEvent);
    loadLeptons(iEvent);
-   loadMETMHT(iEvent);
    loadHT(iEvent);
    loadAUX(iEvent); if( externalBitToTree_.isValid() ) externalBitToTree_TR = (*externalBitToTree_);
 
@@ -661,25 +707,194 @@ bool histAndTree::filter(edm::Event& iEvent, const edm::EventSetup& iSetup) {
       return true;
    }
 
+   if( storeGenDecayInfo_ ){
+      iEvent.getByLabel(genDecayStrVecSrc_, genDecayStrVec_);
+      for(unsigned int id=0; id<genDecayStrVec_->size(); id++){
+         genDecayStrVec_TR->push_back( (*genDecayStrVec_)[id] );
+      }
+
+      iEvent.getByLabel(genDecayChainPartIdxVecSrc_, genDecayChainPartIdxVec_);
+      for(unsigned int id=0; id<genDecayChainPartIdxVec_->size(); id++){
+         int idxGen = (*genDecayChainPartIdxVec_)[id];
+         const reco::GenParticle& genPart = genParticles->at(idxGen);
+         TLorentzVector genPartLVec;
+         genPartLVec.SetPtEtaPhiE(genPart.pt(), genPart.eta(), genPart.phi(), genPart.energy());
+         int pdgId = genPart.pdgId();
+
+         int momIdx = -1;
+         if( genPart.numberOfMothers() >=1 ){
+            momIdx = find_idx( * (genPart.mother(0)) );
+
+            bool foundMom = false;
+            const reco::Candidate * ptrMomPart = genPart.mother(0);
+            int tmpmomIdx = momIdx;
+            while(!foundMom && tmpmomIdx >= genDecayChainPartIdxVec_->front() ){
+               for(unsigned int jd=0; jd<genDecayChainPartIdxVec_->size(); jd++){
+                  if(tmpmomIdx == (*genDecayChainPartIdxVec_)[jd] ){ foundMom = true; break; }
+               }
+               if( !foundMom ){
+                  if( ptrMomPart->numberOfMothers() >= 1 ){
+                     ptrMomPart = ptrMomPart->mother(0);
+                     tmpmomIdx = find_idx( * ptrMomPart );
+                  }else{
+                     tmpmomIdx = -1; break;
+                  }
+               }
+            }
+            if( foundMom || tmpmomIdx == -1 ) momIdx = tmpmomIdx;
+         }
+         if( momIdx == -1 ) std::cout<<"WARNING ... idxGen : "<<idxGen<<"  pdgId : "<<pdgId<<"  momIdx : "<<momIdx<<std::endl;
+
+         genDecayIdxVec_TR->push_back(idxGen);
+         genDecayMomIdxVec_TR->push_back(momIdx);
+         genDecayPdgIdVec_TR->push_back(pdgId);
+         genDecayLVec_TR->push_back(genPartLVec);
+      }
+      if( debug_ ){
+         std::cout<<"\nidxGen/pdgId/momIdx : ";
+         for(unsigned int ig=0; ig<genDecayIdxVec_TR->size(); ig++){
+            std::cout<<"  "<<genDecayIdxVec_TR->at(ig)<<"/"<<genDecayPdgIdVec_TR->at(ig)<<"/"<<genDecayMomIdxVec_TR->at(ig);
+         }
+         std::cout<<std::endl;
+      }
+
+      for(unsigned int ig=0; ig<genJetsInputTags_.size(); ig++){
+         edm::Handle<edm::View<reco::GenJet > > perGenJets;
+         iEvent.getByLabel(genJetsInputTags_[ig], perGenJets);
+         for(unsigned int ip=0; ip<perGenJets->size(); ip++){
+            TLorentzVector perGenJetLVec;
+            perGenJetLVec.SetPtEtaPhiE((*perGenJets)[ip].pt(), (*perGenJets)[ip].eta(), (*perGenJets)[ip].phi(), (*perGenJets)[ip].energy());
+            genJetsLVec_TR[ig].push_back(perGenJetLVec);
+         }
+      }
+      find_W_emu_tauprongs((*W_emuVec_TR), (*W_tau_emuVec_TR), (*W_tau_prongsVec_TR), (*genDecayIdxVec_TR), (*genDecayMomIdxVec_TR), (*genDecayPdgIdVec_TR));
+      if( debug_ ){
+         std::cout<<"\nW_emu (idx: idxGen/pdgId/momIdx) : ";
+         for(unsigned int id=0; id<W_emuVec_TR->size(); id++){
+            std::cout<<"  "<<"("<<W_emuVec_TR->at(id)<<": "<<genDecayIdxVec_TR->at(W_emuVec_TR->at(id))<<"/"<<genDecayPdgIdVec_TR->at(W_emuVec_TR->at(id))<<"/"<<genDecayMomIdxVec_TR->at(W_emuVec_TR->at(id))<<")";
+         }
+         std::cout<<std::endl;
+         std::cout<<"\nW_tau_emu (idx: idxGen/pdgId/momIdx) : ";
+         for(unsigned int id=0; id<W_tau_emuVec_TR->size(); id++){
+            std::cout<<"  "<<"("<<W_tau_emuVec_TR->at(id)<<": "<<genDecayIdxVec_TR->at(W_tau_emuVec_TR->at(id))<<"/"<<genDecayPdgIdVec_TR->at(W_tau_emuVec_TR->at(id))<<"/"<<genDecayMomIdxVec_TR->at(W_tau_emuVec_TR->at(id))<<")";
+         }
+         std::cout<<std::endl;
+         std::cout<<"\nW_tau_prongs (idx: idxGen/pdgId/momIdx) : ";
+         for(unsigned int id=0; id<W_tau_prongsVec_TR->size(); id++){
+            std::cout<<"  "<<"("<<W_tau_prongsVec_TR->at(id)<<": "<<genDecayIdxVec_TR->at(W_tau_prongsVec_TR->at(id))<<"/"<<genDecayPdgIdVec_TR->at(W_tau_prongsVec_TR->at(id))<<"/"<<genDecayMomIdxVec_TR->at(W_tau_prongsVec_TR->at(id))<<")";
+         }
+         std::cout<<std::endl;
+      }
+   }
+  
 // Selection requirement of jets can be decided by the input jet collection.
-   for(unsigned int is=0; is<nIsoTrksForVeto; is++){
-      const reco::PFCandidate isoTrk = (*forVetoIsoTrks)[is];
+   edm::Handle<std::vector<double> >  loose_isotrk_isoVecHandle, loose_isotrk_dzpvVecHandle;
+   iEvent.getByLabel(loose_isotrk_isoVecSrc_, loose_isotrk_isoVecHandle);
+   iEvent.getByLabel(loose_isotrk_dzpvVecSrc_, loose_isotrk_dzpvVecHandle);
+   if( loose_isoTrksHandle_.isValid() && loose_isotrk_isoVecHandle.isValid() && loose_isotrk_dzpvVecHandle.isValid() ){
+      if( loose_nIsoTrks != loose_isotrk_isoVecHandle->size() || loose_nIsoTrks != loose_isotrk_dzpvVecHandle->size() ){
+         std::cout<<"ERROR ... mis-matching between loose_nIsoTrks : "<<loose_nIsoTrks<<"  loose_isotrk_isoVecHandle->size : "<<loose_isotrk_isoVecHandle->size()<<"  loose_isotrk_dzpvVecHandle->size : "<<loose_isotrk_dzpvVecHandle->size()<<std::endl;
+      }
+   }
+
+   if( debug_ ) std::cout<<"\nloose_nIsoTrks : "<<loose_nIsoTrks<<"  nIsoTrksForVeto : "<<nIsoTrksForVeto<<std::endl;
+   for(unsigned int is=0; is<loose_nIsoTrks; is++){
+      const pat::PackedCandidate isoTrk = (*loose_isoTrksHandle_)[is];
       double isoTrkpt = isoTrk.pt(), isoTrketa = isoTrk.eta(), isoTrkphi = isoTrk.phi(), isoTrkenergy = isoTrk.energy();
       double isoTrkcharge = isoTrk.charge();
 
-      if( isoTrkpt != isoTrkpt ){ std::cout<<"\nSkipping an isolated track where isoTrkpt : "<<isoTrkpt<<" is BAD!"<<std::endl<<std::endl; continue; }
+//      if( isoTrkpt != isoTrkpt ){ std::cout<<"\nSkipping an isolated track where isoTrkpt : "<<isoTrkpt<<" is BAD!"<<std::endl<<std::endl; continue; }
 
       TLorentzVector perIsoTrkLVec;
       perIsoTrkLVec.SetPtEtaPhiE(isoTrkpt, isoTrketa, isoTrkphi, isoTrkenergy);
-      forVetoIsoTrksLVec_TR->push_back(perIsoTrkLVec);
+      loose_isoTrksLVec_TR->push_back(perIsoTrkLVec);
 
+      double mtw = sqrt( 2*( (*met)[0].pt()*(*loose_isoTrksHandle_)[is].pt() -( (*met)[0].px()*(*loose_isoTrksHandle_)[is].px() + (*met)[0].py()*(*loose_isoTrksHandle_)[is].py() ) ) );
+   
       std::vector<double> perAuxVec;
-      perAuxVec.push_back(isoTrkcharge);
-      forVetoIsoTrksAuxVec_TR->push_back(perAuxVec);
+      perAuxVec.push_back(isoTrkcharge); perAuxVec.push_back((*loose_isoTrksHandle_)[is].pdgId()); perAuxVec.push_back((*loose_isotrk_dzpvVecHandle)[is]); perAuxVec.push_back((*loose_isotrk_isoVecHandle)[is]); perAuxVec.push_back(mtw);
+      loose_isoTrksAuxVec_TR->push_back(perAuxVec);
 
-      int perIsoTrksConsMatchedJetIdx = getConsMatchedJetIdx((*patjets), perIsoTrkLVec, isoTrkcharge, minDRcutForConsMatch_);
-      forVetoIsoTrksConsMatchedJetIdxVec_TR->push_back(perIsoTrksConsMatchedJetIdx);
+// TODO: fix this getCansMatchedJetIdx in miniAOD ...
+//      int perIsoTrksConsMatchedJetIdx = getConsMatchedJetIdx((*patjets), perIsoTrkLVec, isoTrkcharge, minDRcutForConsMatch_);
+//      loose_isoTrksConsMatchedJetIdxVec_TR->push_back(perIsoTrksConsMatchedJetIdx);
+      if( debug_ ){
+         std::cout<<"  --> is : "<<is<<"  pt/eta/phi/chg : "<<isoTrkpt<<"/"<<isoTrketa<<"/"<<isoTrkphi<<"/"<<isoTrkcharge<<"  mtw : "<<mtw<<"  pdgId : "<<(*loose_isoTrksHandle_)[is].pdgId()<<"  dz : "<<(*loose_isotrk_dzpvVecHandle)[is]<<"  iso/pt : "<<(*loose_isotrk_isoVecHandle)[is]/isoTrkpt<<std::endl;
+      }
    }
+   if( debug_ ) std::cout<<std::endl;
+
+   reco::Vertex::Point vtxpos = (vertices->size() > 0 ? (*vertices)[0].position() : reco::Vertex::Point());
+   iEvent.getByLabel(pfCandSrc_, pfCandHandle_);
+   if( pfCandHandle_.isValid() ){
+      for(unsigned int ip=0; ip<pfCandHandle_->size(); ip++){
+         TLorentzVector perLVec;
+         perLVec.SetPtEtaPhiE( (*pfCandHandle_)[ip].pt(), (*pfCandHandle_)[ip].eta(), (*pfCandHandle_)[ip].phi(), (*pfCandHandle_)[ip].energy() );
+
+         for(unsigned int is=0; is<forVetoIsoTrks_->size(); is++){
+            if( (*forVetoIsoTrks_)[is].pt() == (*pfCandHandle_)[ip].pt() && (*forVetoIsoTrks_)[is].eta() == (*pfCandHandle_)[ip].eta() && (*forVetoIsoTrks_)[is].phi() == (*pfCandHandle_)[ip].phi() && (*forVetoIsoTrks_)[is].energy() == (*pfCandHandle_)[ip].energy() && (*forVetoIsoTrks_)[is].pdgId() == (*pfCandHandle_)[ip].pdgId() ){
+               forVetoIsoTrkIdxVec_TR->push_back(ip);
+            }
+         }
+
+         int perCharge = pfCandHandle_->at(ip).charge();
+         if( perCharge ==0 ) continue;
+
+         double dz = (*pfCandHandle_)[ip].pseudoTrack().dz(vtxpos);
+         if( dz > isotrk_dz_ ) continue;
+
+         int matched = 0;
+         for(unsigned int is=0; is<loose_nIsoTrks; is++){
+            double perdeltaR = perLVec.DeltaR(loose_isoTrksLVec_TR->at(is));
+            if( perdeltaR < isotrk_dR_ ) matched ++;
+            if( (*loose_isoTrksHandle_)[is].pt() == (*pfCandHandle_)[ip].pt() && (*loose_isoTrksHandle_)[is].eta() == (*pfCandHandle_)[ip].eta() && (*loose_isoTrksHandle_)[is].phi() == (*pfCandHandle_)[ip].phi() && (*loose_isoTrksHandle_)[is].energy() == (*pfCandHandle_)[ip].energy() && (*loose_isoTrksHandle_)[is].pdgId() == (*pfCandHandle_)[ip].pdgId() ){
+               (*loose_isoTrksAuxVec_TR)[is].push_back(ip);
+            }
+         }
+         for(unsigned int ig=0; ig<W_emuVec_TR->size(); ig++){
+            int perIdx = W_emuVec_TR->at(ig);
+            TLorentzVector genLVec = genDecayLVec_TR->at(perIdx);
+            double perdeltaR = perLVec.DeltaR(genLVec);
+            if( perdeltaR < isotrk_dR_ ) matched ++;
+         }
+
+         for(unsigned int ig=0; ig<W_tau_emuVec_TR->size(); ig++){
+            int perIdx = W_tau_emuVec_TR->at(ig);
+            TLorentzVector genLVec = genDecayLVec_TR->at(perIdx);
+            double perdeltaR = perLVec.DeltaR(genLVec);
+            if( perdeltaR < isotrk_dR_ ) matched ++;
+         }
+
+         for(unsigned int ig=0; ig<W_tau_prongsVec_TR->size(); ig++){
+            int perIdx = W_tau_prongsVec_TR->at(ig);
+            TLorentzVector genLVec = genDecayLVec_TR->at(perIdx);
+            double perdeltaR = perLVec.DeltaR(genLVec);
+            if( perdeltaR < isotrk_dR_ ) matched ++;
+         }
+
+         if( !matched ) continue;
+
+         trksForIsoVetoLVec_TR->push_back(perLVec);
+         vector<double> perAux;
+         perAux.push_back(perCharge); perAux.push_back(pfCandHandle_->at(ip).pdgId()); perAux.push_back(dz); perAux.push_back(ip);
+         trksForIsoVetoAux_TR->push_back(perAux);
+      }
+   }
+   if( debug_ ){
+      std::cout<<"\nntrksForIsoVeto : "<<trksForIsoVetoLVec_TR->size()<<std::endl;
+      std::cout<<"idx of forVetoIsoTrks : ";
+      for(unsigned int is=0; is<nIsoTrksForVeto; is++){
+         std::cout<<"  "<<forVetoIsoTrkIdxVec_TR->at(is);
+      }
+      std::cout<<std::endl;
+      std::cout<<"idx of loose_isoTrks : ";
+      for(unsigned int is=0; is<loose_nIsoTrks; is++){
+         std::cout<<"  "<<loose_isoTrksAuxVec_TR->at(is).back();
+      }
+      std::cout<<std::endl;
+   }
+
+// end of isotrks
 
    evtWeight_TR = (*evtWeight_);
 
@@ -837,68 +1052,6 @@ bool histAndTree::filter(edm::Event& iEvent, const edm::EventSetup& iSetup) {
 
    }
 
-   if( storeGenDecayInfo_ ){
-      iEvent.getByLabel(genDecayStrVecSrc_, genDecayStrVec_);
-      for(unsigned int id=0; id<genDecayStrVec_->size(); id++){
-         genDecayStrVec_TR->push_back( (*genDecayStrVec_)[id] );
-      }
-
-      iEvent.getByLabel(genDecayChainPartIdxVecSrc_, genDecayChainPartIdxVec_);
-      for(unsigned int id=0; id<genDecayChainPartIdxVec_->size(); id++){
-         int idxGen = (*genDecayChainPartIdxVec_)[id];
-         const reco::GenParticle& genPart = genParticles->at(idxGen);
-         TLorentzVector genPartLVec;
-         genPartLVec.SetPtEtaPhiE(genPart.pt(), genPart.eta(), genPart.phi(), genPart.energy());
-         int pdgId = genPart.pdgId();
-
-         int momIdx = -1;
-         if( genPart.numberOfMothers() >=1 ){
-            momIdx = find_idx( * (genPart.mother(0)) );
-
-            bool foundMom = false;
-            const reco::Candidate * ptrMomPart = genPart.mother(0);
-            int tmpmomIdx = momIdx;
-            while(!foundMom && tmpmomIdx >= genDecayChainPartIdxVec_->front() ){
-               for(unsigned int jd=0; jd<genDecayChainPartIdxVec_->size(); jd++){
-                  if(tmpmomIdx == (*genDecayChainPartIdxVec_)[jd] ){ foundMom = true; break; }
-               }
-               if( !foundMom ){
-                  if( ptrMomPart->numberOfMothers() >= 1 ){
-                     ptrMomPart = ptrMomPart->mother(0);
-                     tmpmomIdx = find_idx( * ptrMomPart );
-                  }else{
-                     tmpmomIdx = -1; break;
-                  }
-               }
-            }
-            if( foundMom || tmpmomIdx == -1 ) momIdx = tmpmomIdx;
-         }
-         if( momIdx == -1 ) std::cout<<"WARNING ... idxGen : "<<idxGen<<"  pdgId : "<<pdgId<<"  momIdx : "<<momIdx<<std::endl;
-
-         genDecayIdxVec_TR->push_back(idxGen);
-         genDecayMomIdxVec_TR->push_back(momIdx);
-         genDecayPdgIdVec_TR->push_back(pdgId);
-         genDecayLVec_TR->push_back(genPartLVec);
-      }
-      if( debug_ ){
-         std::cout<<"\nidxGen/pdgId/momIdx : ";
-         for(unsigned int ig=0; ig<genDecayIdxVec_TR->size(); ig++){
-            std::cout<<"  "<<genDecayIdxVec_TR->at(ig)<<"/"<<genDecayPdgIdVec_TR->at(ig)<<"/"<<genDecayMomIdxVec_TR->at(ig);
-         }
-         std::cout<<std::endl;
-      }
-
-      for(unsigned int ig=0; ig<genJetsInputTags_.size(); ig++){
-         edm::Handle<edm::View<reco::GenJet > > perGenJets;
-         iEvent.getByLabel(genJetsInputTags_[ig], perGenJets);
-         for(unsigned int ip=0; ip<perGenJets->size(); ip++){
-            TLorentzVector perGenJetLVec;
-            perGenJetLVec.SetPtEtaPhiE((*perGenJets)[ip].pt(), (*perGenJets)[ip].eta(), (*perGenJets)[ip].phi(), (*perGenJets)[ip].energy());
-            genJetsLVec_TR[ig].push_back(perGenJetLVec);
-         }
-      }
-   }
-  
    if( storeSMSmodelInfo_ ){
       iEvent.getByLabel(smsModelFileNameStrSrc_, smsModelFileNameStrVec_);
       iEvent.getByLabel(smsModelStrSrc_, smsModelStrVec_);
@@ -941,8 +1094,11 @@ bool histAndTree::filter(edm::Event& iEvent, const edm::EventSetup& iSetup) {
    for(size im=0; im<nMuons; im++){
       TLorentzVector perMuonLVec;
       perMuonLVec.SetPtEtaPhiE( (*muons)[im].pt(), (*muons)[im].eta(), (*muons)[im].phi(), (*muons)[im].energy() );
+
+      double mtw = sqrt( 2*( (*met)[0].pt()*(*muons)[im].pt() -( (*met)[0].px()*(*muons)[im].px() + (*met)[0].py()*(*muons)[im].py() ) ) );
+
       muonsLVec_TR->push_back(perMuonLVec);
-      muonsAux_TR->push_back( (*muons)[im].charge() );
+      muonsAux_TR->push_back( (*muons)[im].charge() ); muonsAux_TR->push_back( mtw );
 
       if( im == 0){
          mu1pt_TR = (*muons)[0].pt(); mu1eta_TR = (*muons)[0].eta(); mu1phi_TR = (*muons)[0].phi();
@@ -958,8 +1114,11 @@ bool histAndTree::filter(edm::Event& iEvent, const edm::EventSetup& iSetup) {
    for(size ie=0; ie<nElectrons; ie++){
       TLorentzVector perEleLVec;
       perEleLVec.SetPtEtaPhiE( (*electrons)[ie].pt(), (*electrons)[ie].eta(), (*electrons)[ie].phi(), (*electrons)[ie].energy() );
+
+      double mtw = sqrt( 2*( (*met)[0].pt()*(*electrons)[ie].pt() -( (*met)[0].px()*(*electrons)[ie].px() + (*met)[0].py()*(*electrons)[ie].py() ) ) );
+
       elesLVec_TR->push_back(perEleLVec);
-      elesAux_TR->push_back( (*electrons)[ie].charge() );
+      elesAux_TR->push_back( (*electrons)[ie].charge() ); elesAux_TR->push_back( mtw );
 
       if( ie == 0){
          ele1pt_TR = (*electrons)[ie].pt(); ele1eta_TR = (*electrons)[ie].eta(); ele1phi_TR = (*electrons)[ie].phi();
@@ -1094,7 +1253,6 @@ void histAndTree::loadLeptons(const edm::Event& iEvent){
 //   iEvent.getByLabel(tauSrc_, taus); nTaus = taus->size();
    iEvent.getByLabel(forVetoMuonSrc_, forVetoMuons); nMuonsForVeto = forVetoMuons->size();
    iEvent.getByLabel(forVetoElectronSrc_, forVetoElectrons); nElectronsForVeto = forVetoElectrons->size();
-   iEvent.getByLabel(forVetoIsoTrkSrc_, forVetoIsoTrks); if( forVetoIsoTrks.isValid() ) nIsoTrksForVeto = forVetoIsoTrks->size(); else nIsoTrksForVeto =0;
 
    for( size im=0; im<nMuons; im++){
 //      if( im ==0 ){ muon1 = (*muons)[im]; muon2 = (*muons)[im]; }
@@ -1114,6 +1272,9 @@ void histAndTree::loadLeptons(const edm::Event& iEvent){
 
 //   ele1Charge = ele1.charge(); ele2Charge = ele2.charge();
 
+// For isotrack vetos
+   iEvent.getByLabel(loose_isoTrkSrc_, loose_isoTrksHandle_); if( loose_isoTrksHandle_.isValid() ) loose_nIsoTrks = loose_isoTrksHandle_->size(); else loose_nIsoTrks =0;
+   iEvent.getByLabel(forVetoIsoTrkSrc_, forVetoIsoTrks_); if( forVetoIsoTrks_.isValid() ) nIsoTrksForVeto = forVetoIsoTrks_->size(); else nIsoTrksForVeto =0;
 }
 
 void histAndTree::loadPhotons(const edm::Event& iEvent){
@@ -1232,6 +1393,83 @@ int histAndTree::find_idx(const reco::Candidate & target){
       }
    }
    return pickedIdx;
+}
+
+bool histAndTree::find_mother(int momPdgId, int dauIdx, const vector<int> &genDecayIdxVec, const vector<int> &genDecayMomIdxVec, const vector<int> &genDecayPdgIdVec){
+   if( dauIdx == -1 ) return false;
+
+   int thisIdx = dauIdx;
+   while( thisIdx >=0 ){
+      int momGenIdx = genDecayMomIdxVec[thisIdx];
+      thisIdx = find_idx(momGenIdx, genDecayIdxVec);
+      if( thisIdx != -1 ){
+         if( abs(genDecayPdgIdVec[thisIdx]) == momPdgId ) return true;
+      }
+   }
+   return false;
+}
+
+bool histAndTree::find_mother(int momIdx, int dauIdx, const vector<int> &genDecayIdxVec, const vector<int> &genDecayMomIdxVec){
+   if( momIdx == -1 || dauIdx == -1 ) return false;
+
+   if( dauIdx == momIdx ) return true;
+
+   int thisIdx = dauIdx;
+   while( thisIdx >=0 ){
+      int momGenIdx = genDecayMomIdxVec[thisIdx];
+      thisIdx = find_idx(momGenIdx, genDecayIdxVec);
+      if( thisIdx == momIdx ) return true;
+   }
+   return false;
+}
+
+void histAndTree::find_mother(std::vector<int> & momIdxVec, int dauIdx, const vector<int> &genDecayIdxVec, const vector<int> &genDecayMomIdxVec){
+   momIdxVec.clear();
+   if( dauIdx == -1 ) return;
+   int thisIdx = dauIdx;
+   while( thisIdx >=0 ){
+      int momGenIdx = genDecayMomIdxVec[thisIdx];
+      thisIdx = find_idx(momGenIdx, genDecayIdxVec);
+      if( thisIdx != -1 ) momIdxVec.push_back(thisIdx);
+   }
+   return;
+}
+
+int histAndTree::find_idx(int genIdx, const vector<int> &genDecayIdxVec){
+   for(int ig=0; ig<(int)genDecayIdxVec.size(); ig++){
+      if( genDecayIdxVec[ig] == genIdx ) return ig;
+   }
+   return -1;
+}
+
+void histAndTree::find_W_emu_tauprongs(std::vector<int> &W_emuVec, std::vector<int> &W_tau_emuVec, std::vector<int> &W_tau_prongsVec, const vector<int> &genDecayIdxVec, const vector<int> &genDecayMomIdxVec, const vector<int> &genDecayPdgIdVec){
+   W_emuVec.clear(); W_tau_emuVec.clear(); W_tau_prongsVec.clear();
+   if( !genDecayPdgIdVec.empty() ){
+      for(unsigned int ig=0; ig<genDecayPdgIdVec.size(); ig++){
+         int pdgId = genDecayPdgIdVec.at(ig);
+         if( abs(pdgId) == 11 || abs(pdgId) == 13 || abs(pdgId) == 211 || abs(pdgId) == 321 ){
+            vector<int> momIdxVec;
+            find_mother(momIdxVec, ig, genDecayIdxVec, genDecayMomIdxVec);
+            int cntMomW = 0, cntMomTau = 0;
+            for(unsigned int im=0; im<momIdxVec.size(); im++){
+// Make this one general for both W and Z decays (need to be careful when both Z and W appear in the decay chain, 
+// but this is unlikely given currently how the MC are generated and how the genDecayXXX vectors are produced)
+//               if( abs(genDecayPdgIdVec[momIdxVec[im]]) == 24 ) cntMomW ++;
+               if( abs(genDecayPdgIdVec[momIdxVec[im]]) == 24 || abs(genDecayPdgIdVec[momIdxVec[im]]) == 23 ) cntMomW ++;
+               if( abs(genDecayPdgIdVec[momIdxVec[im]]) == 15 ) cntMomTau ++;
+            }
+            if( cntMomW ){
+               if( cntMomTau ){
+                  if( abs(pdgId) == 11 || abs(pdgId) == 13 ) W_tau_emuVec.push_back(ig);
+                  else W_tau_prongsVec.push_back(ig);
+               }else{
+                  if( abs(pdgId) == 11 || abs(pdgId) == 13 ) W_emuVec.push_back(ig);
+               }
+            }
+         }
+      }
+   }
+   return;
 }
 
 #include "FWCore/Framework/interface/MakerMacros.h"
