@@ -646,9 +646,10 @@ process.groomProdak4.jetSrc = cms.InputTag("ak4patJetsPFchsPt10")
 process.groomProdak4.groomingOpt = cms.untracked.int32(1)
 #process.groomProdak4.debug = cms.untracked.bool(options.debug)
 
-process.StdStop_DirectionalLeptonVeto_Path = cms.Path(
+process.StdStop_Path = cms.Path(
                                    process.comb_seq *
-                                   process.groomProdak5 * process.groomProdak4 *
+#                                   process.groomProdak5 * process.groomProdak4 *
+                                   process.groomProdak4 *
 #                                   process.stdStop_histAndTree * process.ak4Stop_histAndTree *
                                    process.ak4Stop_histAndTree *
                                    process.ra2PFMuonVeto * process.ra2PFElectronVeto *
@@ -666,17 +667,17 @@ process.StdStop_DirectionalLeptonVeto_Path = cms.Path(
 
 if options.mcInfo == True:
    if options.pythia8 == True:
-      process.StdStop_DirectionalLeptonVeto_Path.replace(process.stdStop_histAndTree, process.printDecayPythia8*process.stdStop_histAndTree)
+      process.StdStop_Path.replace(process.stdStop_histAndTree, process.printDecayPythia8*process.stdStop_histAndTree)
       process.stdStop_histAndTree.genDecayStrVecSrc   = cms.InputTag("printDecayPythia8:decayStr")
       process.stdStop_histAndTree.genDecayChainPartIdxVecSrc = cms.InputTag("printDecayPythia8:decayChainPartIdxVec")
       process.ak4Stop_histAndTree.genDecayStrVecSrc   = cms.InputTag("printDecayPythia8:decayStr")
       process.ak4Stop_histAndTree.genDecayChainPartIdxVecSrc = cms.InputTag("printDecayPythia8:decayChainPartIdxVec")
    else:
-      process.StdStop_DirectionalLeptonVeto_Path.replace(process.stdStop_histAndTree, process.printDecay*process.stdStop_histAndTree)
+      process.StdStop_Path.replace(process.stdStop_histAndTree, process.printDecay*process.stdStop_histAndTree)
 #   process.StdStop_DirectionalLeptonVeto_Path.replace(process.stdStop_histAndTree, process.myGenParticlesForJetsNoNu * process.myGenParticlesForJetsNoNuNoStopDecays * process.myGenParticlesForJetsNoNuOnlyStopDecays * process.myak5GenJetsNoNu * process.myak5GenJetsNoNuNoStopDecays * process.myak5GenJetsNoNuOnlyStopDecays * process.stdStop_histAndTree)
 
 if options.selSMSpts == True:
-   process.StdStop_DirectionalLeptonVeto_Path.replace(process.hltFilter, process.hltFilter*process.smsModelFilter)
+   process.StdStop_Path.replace(process.hltFilter, process.hltFilter*process.smsModelFilter)
 
 ###-- Dump config ------------------------------------------------------------
 file = open('allDump_cfg.py','w')
