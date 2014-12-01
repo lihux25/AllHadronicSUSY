@@ -84,6 +84,12 @@ static const double Rmin_ = lowRatioWoverTop_*mWoverTop_, Rmax_ = highRatioWover
 
 int checkTopCriteria(const vector<double> &tmpFinalSubStrucMass, const double &fatJetMass, vector<int> &passStatusVec);
 
+bool find_mother(int momPdgId, int dauIdx, const vector<int> &genDecayIdxVec, const vector<int> &genDecayMomIdxVec, const vector<int> &genDecayPdgIdVec);
+bool find_mother(int momIdx, int dauIdx, const vector<int> &genDecayIdxVec, const vector<int> &genDecayMomIdxVec);
+void find_mother(std::vector<int> & momIdxVec, int dauIdx, const vector<int> &genDecayIdxVec, const vector<int> &genDecayMomIdxVec);
+int find_idx(int genIdx, const vector<int> &genDecayIdxVec);
+void find_W_emu_tauprongs(std::vector<int> &W_emuVec, std::vector<int> &W_tau_emuVec, std::vector<int> &W_tau_prongsVec, const vector<int> &genDecayIdxVec, const vector<int> &genDecayMomIdxVec, const vector<int> &genDecayPdgIdVec);
+
 TStopwatch timer;
 
 void drawOverFlowBin(TH1 *histToAdjust){
@@ -578,3 +584,79 @@ int checkTopCriteria(const vector<double> &tmpFinalSubStrucMass, const double &f
    return passCriteria;
 }
 
+bool find_mother(int momPdgId, int dauIdx, const vector<int> &genDecayIdxVec, const vector<int> &genDecayMomIdxVec, const vector<int> &genDecayPdgIdVec){
+   if( dauIdx == -1 ) return false;
+
+   int thisIdx = dauIdx;
+   while( thisIdx >=0 ){
+      int momGenIdx = genDecayMomIdxVec[thisIdx];
+      thisIdx = find_idx(momGenIdx, genDecayIdxVec);
+      if( thisIdx != -1 ){
+         if( abs(genDecayPdgIdVec[thisIdx]) == momPdgId ) return true;
+      }
+   }
+   return false;
+}
+
+bool find_mother(int momIdx, int dauIdx, const vector<int> &genDecayIdxVec, const vector<int> &genDecayMomIdxVec){
+   if( momIdx == -1 || dauIdx == -1 ) return false;
+
+   if( dauIdx == momIdx ) return true;
+
+   int thisIdx = dauIdx;
+   while( thisIdx >=0 ){
+      int momGenIdx = genDecayMomIdxVec[thisIdx];
+      thisIdx = find_idx(momGenIdx, genDecayIdxVec);
+      if( thisIdx == momIdx ) return true;
+   }
+   return false;
+}
+
+void find_mother(std::vector<int> & momIdxVec, int dauIdx, const vector<int> &genDecayIdxVec, const vector<int> &genDecayMomIdxVec){
+   momIdxVec.clear();
+   if( dauIdx == -1 ) return;
+   int thisIdx = dauIdx;
+   while( thisIdx >=0 ){
+      int momGenIdx = genDecayMomIdxVec[thisIdx];
+      thisIdx = find_idx(momGenIdx, genDecayIdxVec);
+      if( thisIdx != -1 ) momIdxVec.push_back(thisIdx);
+   }
+   return;
+}
+
+int find_idx(int genIdx, const vector<int> &genDecayIdxVec){
+   for(int ig=0; ig<(int)genDecayIdxVec.size(); ig++){
+      if( genDecayIdxVec[ig] == genIdx ) return ig;
+   }
+   return -1;
+}
+
+void find_W_emu_tauprongs(std::vector<int> &W_emuVec, std::vector<int> &W_tau_emuVec, std::vector<int> &W_tau_prongsVec, const vector<int> &genDecayIdxVec, const vector<int> &genDecayMomIdxVec, const vector<int> &genDecayPdgIdVec){
+   W_emuVec.clear(); W_tau_emuVec.clear(); W_tau_prongsVec.clear();
+   if( !genDecayPdgIdVec.empty() ){
+      for(unsigned int ig=0; ig<genDecayPdgIdVec.size(); ig++){
+         int pdgId = genDecayPdgIdVec.at(ig);
+         if( abs(pdgId) == 11 || abs(pdgId) == 13 || abs(pdgId) == 211 || abs(pdgId) == 321 ){
+            vector<int> momIdxVec;
+            find_mother(momIdxVec, ig, genDecayIdxVec, genDecayMomIdxVec);
+            int cntMomW = 0, cntMomTau = 0;
+            for(unsigned int im=0; im<momIdxVec.size(); im++){
+// Make this one general for both W and Z decays (need to be careful when both Z and W appear in the decay chain, 
+// but this is unlikely given currently how the MC are generated and how the genDecayXXX vectors are produced)
+//               if( abs(genDecayPdgIdVec[momIdxVec[im]]) == 24 ) cntMomW ++;
+               if( abs(genDecayPdgIdVec[momIdxVec[im]]) == 24 || abs(genDecayPdgIdVec[momIdxVec[im]]) == 23 ) cntMomW ++;
+               if( abs(genDecayPdgIdVec[momIdxVec[im]]) == 15 ) cntMomTau ++;
+            }
+            if( cntMomW ){
+               if( cntMomTau ){
+                  if( abs(pdgId) == 11 || abs(pdgId) == 13 ) W_tau_emuVec.push_back(ig);
+                  else W_tau_prongsVec.push_back(ig);
+               }else{
+                  if( abs(pdgId) == 11 || abs(pdgId) == 13 ) W_emuVec.push_back(ig);
+               }
+            }
+         }
+      }
+   }
+   return;
+}
