@@ -310,7 +310,7 @@ histAndTree::histAndTree(const edm::ParameterSet & iConfig) {
    groomedJetIdxSrc_ = iConfig.getParameter<edm::InputTag>("groomedJetIdxSrc");
 
 //   std::string defaultbTagKeyString[] = {"jetBProbabilityBJetTags","jetProbabilityBJetTags","trackCountingHighPurBJetTags","trackCountingHighEffBJetTags","simpleSecondaryVertexHighEffBJetTags","simpleSecondaryVertexHighPurBJetTags","combinedSecondaryVertexBJetTags","combinedSecondaryVertexMVABJetTags"};
-   std::string defaultbTagKeyString[] = {"combinedSecondaryVertexBJetTags"};
+   std::string defaultbTagKeyString[] = {"combinedInclusiveSecondaryVertexV2BJetTags"};
    std::vector<std::string> defaultbTagKeyStringStr(defaultbTagKeyString, defaultbTagKeyString + sizeof(defaultbTagKeyString)/sizeof(defaultbTagKeyString[0]));
    bTagKeyString_ = iConfig.getUntrackedParameter<std::vector<std::string> >("bTagKeyString", defaultbTagKeyStringStr);
    nbTagKeys = bTagKeyString_.size();
@@ -840,7 +840,11 @@ bool histAndTree::filter(edm::Event& iEvent, const edm::EventSetup& iSetup) {
          int perCharge = pfCandHandle_->at(ip).charge();
          if( perCharge ==0 ) continue;
 
-         double dz = (*pfCandHandle_)[ip].pseudoTrack().dz(vtxpos);
+//         double dz = (*pfCandHandle_)[ip].pseudoTrack().dz(vtxpos);
+         double dz = 100.;
+         if( (*pfCandHandle_)[ip].bestTrack() ){
+            dz = (*pfCandHandle_)[ip].bestTrack()->dz(vtxpos);
+         }
          if( dz > isotrk_dz_ ) continue;
 
          int matched = 0;

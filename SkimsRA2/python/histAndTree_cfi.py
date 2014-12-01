@@ -8,7 +8,7 @@ histAndTree = cms.EDFilter('histAndTree',
    forVetoMuonSrc      = cms.InputTag("myPatMuonsPFIDIso"),
    forVetoElectronSrc  = cms.InputTag("patElectronsIDIso"),
 
-   genJetSrc           = cms.InputTag("ak5GenJets"),
+   genJetSrc           = cms.InputTag("ak4GenJets"),
    genMETSrc           = cms.InputTag("genMetCalo"),
    genParticleSrc      = cms.InputTag("genParticles"),
 

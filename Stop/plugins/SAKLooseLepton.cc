@@ -1,4 +1,5 @@
 #include "AllHadronicSUSY/Stop/plugins/SAKLooseLepton.h"
+#include "DataFormats/TrackReco/interface/HitPattern.h"
 
 //_____________________________________________________________________________
 /**
@@ -31,7 +32,7 @@ bool isLooseElectronID(const reco::GsfElectron & electron, const math::XYZPoint 
 //                                                     };
   //...........................................................................
   const reco::GsfTrackRef & track = electron.gsfTrack();
-  if (electron.pt() < 20 && track->trackerExpectedHitsInner().numberOfLostHits() > 0                        )                  return false;
+  if (electron.pt() < 20 && track->hitPattern().numberOfLostHits(reco::HitPattern::MISSING_INNER_HITS) > 0                        )                  return false;
   if (electron.pt() < 10 && track->hitPattern().numberOfValidPixelHits()         < (electron.isEB() ? 2 : 1))                  return false;
   if (!passCut(electron.pt(), std::abs(track->dz (primaryVertex)), true, numLeptonPTs, LEPTON_PTS, MAX_DZ [!electron.isEB()])) return false;
 // S.L. 21/6
@@ -107,7 +108,7 @@ bool isLooseMuonID(const reco::Muon & muon, const math::XYZPoint & primaryVertex
   bool muonidtmlst = muon::isGoodMuon(muon, tmlst);
 
   if (!( muonidglprt && muon.numberOfMatches() > 1 ) && !( muon.isTrackerMuon() && muonidtmlst )) return false;
-  if (track->trackerExpectedHitsInner().numberOfLostHits() > (muon.pt() < 20 ? 1 : 4))            return false;
+  if (track->hitPattern().numberOfLostHits(reco::HitPattern::MISSING_INNER_HITS) > (muon.pt() < 20 ? 1 : 4))            return false;
   if (!passCut(muon.pt(), std::abs(track->dxy(primaryVertex)), true, numLeptonPTs, LEPTON_PTS, MAX_DXY[!inBarrel])) return false;
   if (!passCut(muon.pt(), std::abs(track->dz (primaryVertex)), true, numLeptonPTs, LEPTON_PTS, MAX_DZ [!inBarrel])) return false;
   return true;

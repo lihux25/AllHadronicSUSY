@@ -5,6 +5,6 @@ import FWCore.ParameterSet.Config as cms
 # on how to use the cut-string
 #
 selectedPatJetsRA2 = cms.EDFilter("RA2BasicJetSelector",
-    src = cms.InputTag("patJetsPF"),
+    src = cms.InputTag("slimmedJets"),
     cut = cms.string("")
 )

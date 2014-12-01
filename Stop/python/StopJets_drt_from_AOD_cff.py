@@ -5,23 +5,23 @@ from PhysicsTools.PatAlgos.selectionLayer1.jetCountFilter_cfi import *
 
 # PFJets (with CHS)
 stopJetsPFchsPt30     = simpleJetSelector.clone()
-stopJetsPFchsPt30.jetSrc = cms.InputTag('patJetsAK5PFCHS')
+stopJetsPFchsPt30.jetSrc = cms.InputTag('slimmedJets')
 stopJetsPFchsPt30.pfJetCut = cms.string('pt > 30')
 
 stopJetsPFchsPt70Eta24 = simpleJetSelector.clone()
-stopJetsPFchsPt70Eta24.jetSrc = cms.InputTag("patJetsAK5PFCHS")
+stopJetsPFchsPt70Eta24.jetSrc = cms.InputTag("slimmedJets")
 stopJetsPFchsPt70Eta24.pfJetCut = cms.string("pt>70 && abs(eta)<2.4")
 
 stopJetsPFchsPt50Eta24 = simpleJetSelector.clone()
-stopJetsPFchsPt50Eta24.jetSrc = cms.InputTag("patJetsAK5PFCHS")
+stopJetsPFchsPt50Eta24.jetSrc = cms.InputTag("slimmedJets")
 stopJetsPFchsPt50Eta24.pfJetCut = cms.string("pt>50 && abs(eta)<2.4")
 
 stopJetsPFchsPt30Eta24 = simpleJetSelector.clone()
-stopJetsPFchsPt30Eta24.jetSrc = cms.InputTag("patJetsAK5PFCHS")
+stopJetsPFchsPt30Eta24.jetSrc = cms.InputTag("slimmedJets")
 stopJetsPFchsPt30Eta24.pfJetCut = cms.string("pt>30 && abs(eta)<2.4")
 
 stopJetsPFchsPt70eta2p5 = simpleJetSelector.clone()
-stopJetsPFchsPt70eta2p5.jetSrc = cms.InputTag('patJetsAK5PFCHS')
+stopJetsPFchsPt70eta2p5.jetSrc = cms.InputTag('slimmedJets')
 stopJetsPFchsPt70eta2p5.pfJetCut = cms.string('pt > 70 & abs(eta) < 2.5')
 
 #count jets

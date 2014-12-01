@@ -22,6 +22,7 @@
 #include "DataFormats/RecoCandidate/interface/IsoDeposit.h"
 //#include "EGamma/EGammaAnalysisTools/interface/EGammaCutBasedEleId.h"
 #include "AllHadronicSUSY/Skims/plugins/ElectronEffectiveArea.h"
+#include "DataFormats/TrackReco/interface/HitPattern.h"
 
 typedef std::vector< edm::Handle< edm::ValueMap<reco::IsoDeposit> > >   IsoDepositMaps;
 typedef std::vector< edm::Handle< edm::ValueMap<double> > >             IsoDepositVals;
@@ -177,7 +178,7 @@ bool GoodElectronSelector::filter(edm::Event& iEvent, const edm::EventSetup& iSe
     // conversion rejection variables
     bool vtxFitConversion = ConversionTools::hasMatchedConversion( *ele, conversions, beamSpot.position());
     if( vtxFitConversion ){/*empty to avoid a compiling error*/}
-    float mHits = ele->gsfTrack()->trackerExpectedHitsInner().numberOfHits(); 
+    float mHits = ele->gsfTrack()->hitPattern().numberOfLostHits(reco::HitPattern::MISSING_INNER_HITS);
     
     // choose cut if barrel or endcap
     unsigned int idx = isEB ? 0 : 1;

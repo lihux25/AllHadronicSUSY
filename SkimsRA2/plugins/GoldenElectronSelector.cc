@@ -29,6 +29,8 @@
 
 #include "DataFormats/Provenance/interface/ProductID.h"
 
+#include "DataFormats/TrackReco/interface/HitPattern.h"
+
 //#include "recipeAUX/Electron/interface/RadialIsoCalculator.h"
 
 typedef std::vector< edm::Handle< edm::ValueMap<double> > >             IsoDepositVals;
@@ -226,7 +228,7 @@ bool GoldenElectronSelector::filter(edm::Event& iEvent, const edm::EventSetup& i
       double iso_em = (*(isoVals)[1])[elePtr];
       double iso_nh = (*(isoVals)[2])[elePtr];
 
-      float mHits = eleItr->gsfTrack()->trackerExpectedHitsInner().numberOfHits();
+      float mHits = eleItr->gsfTrack()->hitPattern().numberOfLostHits(reco::HitPattern::MISSING_INNER_HITS);
 
       cut_dEtaIn.clear(); cut_dEtaIn.resize(2, 999.9);
       cut_dPhiIn.clear(); cut_dPhiIn.resize(2, 999.9);
