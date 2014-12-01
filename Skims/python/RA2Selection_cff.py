@@ -8,7 +8,7 @@ from AllHadronicSUSY.Skims.RA2Leptons_cff import *
 #from AllHadronicSUSY.Skims.RA2Cleaning_cff import *
 
 ra2FullPFSelectionNoMHT = cms.Sequence(
-  countJetsAK5PFPt50Eta25 *
+  countJetsAK4PFPt50Eta25 *
   htPFFilter *
   jetMHTPFDPhiFilter *
   ra2PFMuonVeto *

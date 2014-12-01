@@ -3,7 +3,7 @@ from AllHadronicSUSY.Skims.mhtProducer_cfi import *
 
 # MHT using PF Jets
 mhtPF = mht.clone()
-mhtPF.JetCollection = cms.InputTag('patJetsAK5PFPt30')
+mhtPF.JetCollection = cms.InputTag('patJetsAK4PFPt30')
 
 mhtPFchs = mht.clone()
 mhtPFchs.JetCollection = cms.InputTag('patJetsPFchsPt30')
