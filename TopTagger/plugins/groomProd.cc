@@ -126,9 +126,9 @@ bool groomProd::filter(edm::Event & iEvent, const edm::EventSetup & iSetup) {
 
   const JetCorrector* corrector = 0;
   if( iEvent.isRealData() ){
-     corrector = JetCorrector::getJetCorrector("ak5PFchsL1FastL2L3Residual",iSetup);
+     corrector = JetCorrector::getJetCorrector("ak4PFJetsL1FastL2L3Residual",iSetup);
   }else{
-     corrector = JetCorrector::getJetCorrector("ak5PFchsL1FastL2L3",iSetup);
+     corrector = JetCorrector::getJetCorrector("ak4PFJetsL1FastL2L3",iSetup);
   } 
 
   if( debug_ ){
