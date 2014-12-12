@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////
 // This class has been automatically generated on
-// Thu Dec 11 11:35:12 2014 by ROOT version 5.34/18
+// Fri Dec 12 16:09:29 2014 by ROOT version 5.34/18
 // from TTree AUX/AUX
 // found on file: stopFlatNtuples.root
 //////////////////////////////////////////////////////////
@@ -29,9 +29,13 @@ public :
    UInt_t          lumi;
    UInt_t          event;
    Double_t        mht;
+   Double_t        mhtphi;
    Double_t        ht;
    Double_t        met;
    Double_t        metphi;
+   Double_t        dPhi0_CUT;
+   Double_t        dPhi1_CUT;
+   Double_t        dPhi2_CUT;
    Double_t        tru_npv;
    Double_t        avg_npv;
    Double_t        bestTopJetMass;
@@ -63,14 +67,13 @@ public :
    vector<double>  *muonsMtw;
    vector<double>  *elesCharge;
    vector<double>  *elesMtw;
-   vector<double>  *recoJetsBtag;
+   vector<double>  *recoJetsBtag_0;
    vector<double>  *trksForIsoVeto_charge;
    vector<double>  *trksForIsoVeto_dz;
    vector<double>  *loose_isoTrks_charge;
    vector<double>  *loose_isoTrks_dz;
    vector<double>  *loose_isoTrks_iso;
    vector<double>  *loose_isoTrks_mtw;
-   vector<double>  *dPhis_CUT;
    vector<int>     *recoJetsFlavor;
    vector<int>     *genDecayIdxVec;
    vector<int>     *genDecayPdgIdVec;
@@ -82,7 +85,7 @@ public :
    vector<int>     *trksForIsoVeto_idx;
    vector<int>     *loose_isoTrks_pdgId;
    vector<int>     *loose_isoTrks_idx;
-   vector<int>     *forVetoIsoTrkIdxVec;
+   vector<int>     *forVetoIsoTrksidx;
    vector<string>  *genDecayStrVec;
    vector<string>  *fileNameStr;
    vector<string>  *smsModelStr;
@@ -98,9 +101,13 @@ public :
    TBranch        *b_lumi;   //!
    TBranch        *b_event;   //!
    TBranch        *b_mht;   //!
+   TBranch        *b_mhtphi;   //!
    TBranch        *b_ht;   //!
    TBranch        *b_met;   //!
    TBranch        *b_metphi;   //!
+   TBranch        *b_dPhi0_CUT;   //!
+   TBranch        *b_dPhi1_CUT;   //!
+   TBranch        *b_dPhi2_CUT;   //!
    TBranch        *b_tru_npv;   //!
    TBranch        *b_avg_npv;   //!
    TBranch        *b_bestTopJetMass;   //!
@@ -132,14 +139,13 @@ public :
    TBranch        *b_muonsMtw;   //!
    TBranch        *b_elesCharge;   //!
    TBranch        *b_elesMtw;   //!
-   TBranch        *b_recoJetsBtag;   //!
+   TBranch        *b_recoJetsBtag_0;   //!
    TBranch        *b_trksForIsoVeto_charge;   //!
    TBranch        *b_trksForIsoVeto_dz;   //!
    TBranch        *b_loose_isoTrks_charge;   //!
    TBranch        *b_loose_isoTrks_dz;   //!
    TBranch        *b_loose_isoTrks_iso;   //!
    TBranch        *b_loose_isoTrks_mtw;   //!
-   TBranch        *b_dPhis_CUT;   //!
    TBranch        *b_recoJetsFlavor;   //!
    TBranch        *b_genDecayIdxVec;   //!
    TBranch        *b_genDecayPdgIdVec;   //!
@@ -151,7 +157,7 @@ public :
    TBranch        *b_trksForIsoVeto_idx;   //!
    TBranch        *b_loose_isoTrks_pdgId;   //!
    TBranch        *b_loose_isoTrks_idx;   //!
-   TBranch        *b_forVetoIsoTrkIdxVec;   //!
+   TBranch        *b_forVetoIsoTrksidx;   //!
    TBranch        *b_genDecayStrVec;   //!
    TBranch        *b_fileNameStr;   //!
    TBranch        *b_smsModelStr;   //!
@@ -232,14 +238,13 @@ void aux::Init(TTree *tree)
    muonsMtw = 0;
    elesCharge = 0;
    elesMtw = 0;
-   recoJetsBtag = 0;
+   recoJetsBtag_0 = 0;
    trksForIsoVeto_charge = 0;
    trksForIsoVeto_dz = 0;
    loose_isoTrks_charge = 0;
    loose_isoTrks_dz = 0;
    loose_isoTrks_iso = 0;
    loose_isoTrks_mtw = 0;
-   dPhis_CUT = 0;
    recoJetsFlavor = 0;
    genDecayIdxVec = 0;
    genDecayPdgIdVec = 0;
@@ -251,7 +256,7 @@ void aux::Init(TTree *tree)
    trksForIsoVeto_idx = 0;
    loose_isoTrks_pdgId = 0;
    loose_isoTrks_idx = 0;
-   forVetoIsoTrkIdxVec = 0;
+   forVetoIsoTrksidx = 0;
    genDecayStrVec = 0;
    fileNameStr = 0;
    smsModelStr = 0;
@@ -271,9 +276,13 @@ void aux::Init(TTree *tree)
    fChain->SetBranchAddress("lumi", &lumi, &b_lumi);
    fChain->SetBranchAddress("event", &event, &b_event);
    fChain->SetBranchAddress("mht", &mht, &b_mht);
+   fChain->SetBranchAddress("mhtphi", &mhtphi, &b_mhtphi);
    fChain->SetBranchAddress("ht", &ht, &b_ht);
    fChain->SetBranchAddress("met", &met, &b_met);
    fChain->SetBranchAddress("metphi", &metphi, &b_metphi);
+   fChain->SetBranchAddress("dPhi0_CUT", &dPhi0_CUT, &b_dPhi0_CUT);
+   fChain->SetBranchAddress("dPhi1_CUT", &dPhi1_CUT, &b_dPhi1_CUT);
+   fChain->SetBranchAddress("dPhi2_CUT", &dPhi2_CUT, &b_dPhi2_CUT);
    fChain->SetBranchAddress("tru_npv", &tru_npv, &b_tru_npv);
    fChain->SetBranchAddress("avg_npv", &avg_npv, &b_avg_npv);
    fChain->SetBranchAddress("bestTopJetMass", &bestTopJetMass, &b_bestTopJetMass);
@@ -305,14 +314,13 @@ void aux::Init(TTree *tree)
    fChain->SetBranchAddress("muonsMtw", &muonsMtw, &b_muonsMtw);
    fChain->SetBranchAddress("elesCharge", &elesCharge, &b_elesCharge);
    fChain->SetBranchAddress("elesMtw", &elesMtw, &b_elesMtw);
-   fChain->SetBranchAddress("recoJetsBtag", &recoJetsBtag, &b_recoJetsBtag);
+   fChain->SetBranchAddress("recoJetsBtag_0", &recoJetsBtag_0, &b_recoJetsBtag_0);
    fChain->SetBranchAddress("trksForIsoVeto_charge", &trksForIsoVeto_charge, &b_trksForIsoVeto_charge);
    fChain->SetBranchAddress("trksForIsoVeto_dz", &trksForIsoVeto_dz, &b_trksForIsoVeto_dz);
    fChain->SetBranchAddress("loose_isoTrks_charge", &loose_isoTrks_charge, &b_loose_isoTrks_charge);
    fChain->SetBranchAddress("loose_isoTrks_dz", &loose_isoTrks_dz, &b_loose_isoTrks_dz);
    fChain->SetBranchAddress("loose_isoTrks_iso", &loose_isoTrks_iso, &b_loose_isoTrks_iso);
    fChain->SetBranchAddress("loose_isoTrks_mtw", &loose_isoTrks_mtw, &b_loose_isoTrks_mtw);
-   fChain->SetBranchAddress("dPhis_CUT", &dPhis_CUT, &b_dPhis_CUT);
    fChain->SetBranchAddress("recoJetsFlavor", &recoJetsFlavor, &b_recoJetsFlavor);
    fChain->SetBranchAddress("genDecayIdxVec", &genDecayIdxVec, &b_genDecayIdxVec);
    fChain->SetBranchAddress("genDecayPdgIdVec", &genDecayPdgIdVec, &b_genDecayPdgIdVec);
@@ -324,7 +332,7 @@ void aux::Init(TTree *tree)
    fChain->SetBranchAddress("trksForIsoVeto_idx", &trksForIsoVeto_idx, &b_trksForIsoVeto_idx);
    fChain->SetBranchAddress("loose_isoTrks_pdgId", &loose_isoTrks_pdgId, &b_loose_isoTrks_pdgId);
    fChain->SetBranchAddress("loose_isoTrks_idx", &loose_isoTrks_idx, &b_loose_isoTrks_idx);
-   fChain->SetBranchAddress("forVetoIsoTrkIdxVec", &forVetoIsoTrkIdxVec, &b_forVetoIsoTrkIdxVec);
+   fChain->SetBranchAddress("forVetoIsoTrksidx", &forVetoIsoTrksidx, &b_forVetoIsoTrksidx);
    fChain->SetBranchAddress("genDecayStrVec", &genDecayStrVec, &b_genDecayStrVec);
    fChain->SetBranchAddress("fileNameStr", &fileNameStr, &b_fileNameStr);
    fChain->SetBranchAddress("smsModelStr", &smsModelStr, &b_smsModelStr);

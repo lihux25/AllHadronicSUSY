@@ -200,7 +200,7 @@ bool prodIsoTrks::filter(edm::Event& iEvent, const edm::EventSetup& iSetup) {
         if( (*pfCandHandle_)[ip].bestTrack() ){
            dz = (*pfCandHandle_)[ip].bestTrack()->dz(vtxpos);
         }
-        if( dz > isotrk_dz_ ) continue;
+        if( fabs(dz) > isotrk_dz_ ) continue;
 
         int matched = 0;
         for(unsigned int is=0; is<loose_nIsoTrks; is++){

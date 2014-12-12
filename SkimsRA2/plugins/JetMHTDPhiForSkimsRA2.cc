@@ -30,6 +30,9 @@ JetMHTDPhiForSkimsRA2::JetMHTDPhiForSkimsRA2(const edm::ParameterSet & iConfig) 
   jetSrc_ = iConfig.getParameter<edm::InputTag>("JetSource");
 
   produces<std::vector<double> >("jetMHTDPhiVec");
+  produces<double>("dPhi0");
+  produces<double>("dPhi1");
+  produces<double>("dPhi2");
 }
 
 
@@ -51,7 +54,14 @@ bool JetMHTDPhiForSkimsRA2::filter(edm::Event & iEvent, const edm::EventSetup & 
 
   jetMHTDPhiVecPtr->push_back(dPhi0); jetMHTDPhiVecPtr->push_back(dPhi1); jetMHTDPhiVecPtr->push_back(dPhi2);
 
-  iEvent.put( jetMHTDPhiVecPtr, "jetMHTDPhiVec");
+  std::auto_ptr<double> dPhi0_CUT(new double); *dPhi0_CUT = dPhi0;
+  std::auto_ptr<double> dPhi1_CUT(new double); *dPhi1_CUT = dPhi1;
+  std::auto_ptr<double> dPhi2_CUT(new double); *dPhi2_CUT = dPhi2;
+
+  iEvent.put(jetMHTDPhiVecPtr, "jetMHTDPhiVec");
+  iEvent.put(dPhi0_CUT, "dPhi0");
+  iEvent.put(dPhi1_CUT, "dPhi1");
+  iEvent.put(dPhi2_CUT, "dPhi2");
 
   return true;
 
