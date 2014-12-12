@@ -89,7 +89,7 @@ TopTagger::TopTagger(const edm::ParameterSet & iConfig):
    maxIndexForOrderingArr_(iConfig.getUntrackedParameter<std::vector<int> >("maxIndexForOrderingArr", defaultMaxIndexForOrderingVec)),
    metSrc_(iConfig.getParameter<edm::InputTag>("metSrc")),
    jetSrc_(iConfig.getParameter<edm::InputTag>("jetSrc")),
-   bTagKeyString_(iConfig.getUntrackedParameter<std::string>("bTagKeyString", "combinedSecondaryVertexBJetTags")),
+   bTagKeyString_(iConfig.getUntrackedParameter<std::string>("bTagKeyString", "combinedInclusiveSecondaryVertexV2BJetTags")),
    pfJetCutForJetCounting_(iConfig.existsAs<std::string>("pfJetCutForJetCounting") ? iConfig.getParameter<std::string>("pfJetCutForJetCounting") : "", true),
    pfJetCutForJetCombining_(iConfig.existsAs<std::string>("pfJetCutForJetCombining") ? iConfig.getParameter<std::string>("pfJetCutForJetCombining") : "", true),
    evtWeightInput_(iConfig.getParameter<edm::InputTag>("evtWeightInput")),

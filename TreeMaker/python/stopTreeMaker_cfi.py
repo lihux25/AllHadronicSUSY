@@ -8,37 +8,37 @@ TreeName          = cms.string('AUX'),
 debug = cms.bool(False),
 # List of InputTags for Float_t variables (Float_t) stored in
 # optional names to store in the tree can be defined  not only will have an effect if the number of input tags for variable is exactly the same as number of optional names!!
-VarsDouble        = cms.VInputTag(),
-VarsDoubleNamesInTree = cms.vstring(),
+varsDouble        = cms.VInputTag(),
+varsDoubleNamesInTree = cms.vstring(),
 # List of InputTags for Int variables (Int) stored in
 # optional names to store in the tree can be defined  not only will have an effect if the number of input tags for variable is exactly the same as number of optional names!!
-VarsInt        = cms.VInputTag(),
-VarsIntNamesInTree = cms.vstring(),
+varsInt        = cms.VInputTag(),
+varsIntNamesInTree = cms.vstring(),
 # List of InputTags for bool variables (bool) stored in
 # optional names to store in the tree can be defined  not only will have an effect if the number of input tags for variable is exactly the same as number of optional names!!
-VarsBool        = cms.VInputTag(),
-VarsBoolNamesInTree = cms.vstring(),
+varsBool        = cms.VInputTag(),
+varsBoolNamesInTree = cms.vstring(),
 
-VarsString      = cms.VInputTag(),
-VarsStringNamesInTree = cms.vstring(),
+varsString      = cms.VInputTag(),
+varsStringNamesInTree = cms.vstring(),
 
 # List of InputTags for TLorentz variables (TLorentz) stored in
 # optional names to store in the tree can be defined  not only will have an effect if the number of input tags for variable is exactly the same as number of optional names!!
-VarsTLorentzVector        = cms.VInputTag(),
-VarsTLorentzVectorNamesInTree = cms.vstring(),
+varsTLorentzVector        = cms.VInputTag(),
+varsTLorentzVectorNamesInTree = cms.vstring(),
 
-VectorDouble              = cms.VInputTag(),
-VectorDoubleNamesInTree   = cms.vstring(),
+vectorDouble              = cms.VInputTag(),
+vectorDoubleNamesInTree   = cms.vstring(),
 
-VectorInt                 = cms.VInputTag(),
-VectorIntNamesInTree      = cms.vstring(),
+vectorInt                 = cms.VInputTag(),
+vectorIntNamesInTree      = cms.vstring(),
 
-VectorBool                = cms.VInputTag(),
-VectorBoolNamesInTree     = cms.vstring(),
+vectorBool                = cms.VInputTag(),
+vectorBoolNamesInTree     = cms.vstring(),
 
-VectorString              = cms.VInputTag(),
-VectorStringNamesInTree   = cms.vstring(),
+vectorString              = cms.VInputTag(),
+vectorStringNamesInTree   = cms.vstring(),
 
-VectorTLorentzVector        = cms.VInputTag(),
-VectorTLorentzVectorNamesInTree = cms.vstring(),
+vectorTLorentzVector        = cms.VInputTag(),
+vectorTLorentzVectorNamesInTree = cms.vstring(),
 )

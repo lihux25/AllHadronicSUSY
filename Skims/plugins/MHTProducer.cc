@@ -32,6 +32,8 @@ MHTProducer::MHTProducer(const edm::ParameterSet & iConfig) {
   minJetPt_    = iConfig.getParameter<double>("MinJetPt");
   maxJetEta_   = iConfig.getParameter<double>("MaxJetEta");
   produces<std::vector<reco::MET> >("");
+  produces<double>("mht");
+  produces<double>("mhtphi");
 }
 
 
@@ -55,7 +57,15 @@ void MHTProducer::produce(edm::Event & iEvent, const edm::EventSetup & iSetup) {
   }
   mhtp->push_back(reco::MET(mht, reco::MET::Point()));
 
+  std::auto_ptr<double> mhtVal(new double);
+  *mhtVal = mht.pt();
+
+  std::auto_ptr<double> mhtphiVal(new double);
+  *mhtphiVal = mht.phi();
+
   iEvent.put(mhtp);
+  iEvent.put(mhtVal, "mht");
+  iEvent.put(mhtphiVal, "mhtphi");
 
 }
 
