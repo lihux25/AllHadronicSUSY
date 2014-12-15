@@ -28,73 +28,73 @@ public :
    UInt_t          run;
    UInt_t          lumi;
    UInt_t          event;
-   Double_t        mht;
+   Double_t        mht; // calculated using AK4 jets with Pt > 30 GeV
    Double_t        mhtphi;
-   Double_t        ht;
-   Double_t        met;
+   Double_t        ht; // calculated using AK4 jets with Pt > 50 GeV & |eta| < 2.4
+   Double_t        met; // slimmedMETs
    Double_t        metphi;
-   Double_t        dPhi0_CUT;
-   Double_t        dPhi1_CUT;
-   Double_t        dPhi2_CUT;
-   Double_t        tru_npv;
-   Double_t        avg_npv;
-   Double_t        bestTopJetMass;
-   Double_t        MT2;
-   Double_t        mTbestTopJet;
-   Double_t        mTbJet;
-   Double_t        linearCombmTbJetPlusmTbestTopJet;
-   Double_t        mTbestWJet;
-   Double_t        mTbestbJet;
+   Double_t        dPhi0_CUT; // calculated using AK4 jets with Pt > 30 GeV and slimmedMETs
+   Double_t        dPhi1_CUT; // ditto
+   Double_t        dPhi2_CUT; // ditto
+   Double_t        tru_npv; // true PU in simulation
+   Double_t        avg_npv; // average of PU in BX -1, 0, and 1
+   Double_t        bestTopJetMass; // top jet mass
+   Double_t        MT2; // MT2
+   Double_t        mTbestTopJet; // MT of top and MET
+   Double_t        mTbJet; // MT of Rsys and MET
+   Double_t        linearCombmTbJetPlusmTbestTopJet; // Linear combination of the two MT's
+   Double_t        mTbestWJet; // MT of W (in the triplet) and MET
+   Double_t        mTbestbJet; // MT of b (in the triplet - b-tagged or not) and MET
    Double_t        mTremainingTopJet;
-   Double_t        evtWeight;
-   Double_t        smsMotherMass;
-   Double_t        smsDaughterMass;
-   Int_t           nMuons_CUT;
-   Int_t           nElectrons_CUT;
-   Int_t           nJets;
-   Int_t           loose_nIsoTrks;
-   Int_t           nIsoTrks_CUT;
-   Int_t           nJets_CUT;
-   Int_t           vtxSize;
-   Int_t           npv;
-   Int_t           nm1;
-   Int_t           n0;
-   Int_t           np1;
-   Int_t           bestTopJetIdx;
-   Int_t           pickedRemainingCombfatJetIdx;
-   UInt_t          remainPassCSVS;
-   vector<double>  *muonsCharge;
-   vector<double>  *muonsMtw;
-   vector<double>  *elesCharge;
-   vector<double>  *elesMtw;
-   vector<double>  *recoJetsBtag_0;
-   vector<double>  *trksForIsoVeto_charge;
-   vector<double>  *trksForIsoVeto_dz;
-   vector<double>  *loose_isoTrks_charge;
-   vector<double>  *loose_isoTrks_dz;
-   vector<double>  *loose_isoTrks_iso;
-   vector<double>  *loose_isoTrks_mtw;
-   vector<int>     *recoJetsFlavor;
-   vector<int>     *genDecayIdxVec;
-   vector<int>     *genDecayPdgIdVec;
-   vector<int>     *genDecayMomIdxVec;
-   vector<int>     *W_emuVec;
-   vector<int>     *W_tau_emuVec;
-   vector<int>     *W_tau_prongsVec;
-   vector<int>     *trksForIsoVeto_pdgId;
-   vector<int>     *trksForIsoVeto_idx;
-   vector<int>     *loose_isoTrks_pdgId;
-   vector<int>     *loose_isoTrks_idx;
-   vector<int>     *forVetoIsoTrksidx;
-   vector<string>  *genDecayStrVec;
-   vector<string>  *fileNameStr;
-   vector<string>  *smsModelStr;
-   vector<TLorentzVector> *muonsLVec;
-   vector<TLorentzVector> *elesLVec;
-   vector<TLorentzVector> *jetsLVec;
-   vector<TLorentzVector> *genDecayLVec;
-   vector<TLorentzVector> *trksForIsoVetoLVec;
-   vector<TLorentzVector> *loose_isoTrksLVec;
+   Double_t        evtWeight; // event weight from weightProducer
+   Double_t        smsMotherMass; // SMS model mother mass
+   Double_t        smsDaughterMass; // SMS model daughter mass
+   Int_t           nMuons_CUT; // number of muons: Pt>5 GeV, |eta|<2.4, relIso<0.2 (and other standard muon POG ID/ISO requirement)
+   Int_t           nElectrons_CUT; // number of electrons: Pt>5 GeV, |eta|<2.5 and other 8 TeV electron POG standard definition
+   Int_t           nJets; // number of jets with AK4 and Pt>10 GeV
+   Int_t           loose_nIsoTrks; // number of isolated tracks with Pt>5 GeV and relIso < 0.5
+   Int_t           nIsoTrks_CUT; // number of isolated tracks with Pt>10 GeV, dR<0.3, dz<0.05 and relIso<0.1
+   Int_t           nJets_CUT; // number of AK4 jets: Pt>30 GeV
+   Int_t           vtxSize; // number of primary vertices
+   Int_t           npv; // number of PU in BX=0
+   Int_t           nm1; // number of PU in BX=-1
+   Int_t           n0; // number of PU in BX=0
+   Int_t           np1; // number of PU in BX=1
+   Int_t           bestTopJetIdx; // index of picked triplet in all the triplet combinations
+   Int_t           pickedRemainingCombfatJetIdx; // index of the picked triplet (if any) in all the triplet combinations in the Rsys
+   UInt_t          remainPassCSVS; // the Rsys has a CSVM b-tagged jet or not
+   vector<double>  *muonsCharge; // charge of muons
+   vector<double>  *muonsMtw; // MT of muon and MET
+   vector<double>  *elesCharge; // charge of electrons
+   vector<double>  *elesMtw; // MT of electron and MET
+   vector<double>  *recoJetsBtag_0; // b-tagging CSV values. In PHYS14 sample, it's combinedInclusiveSecondaryVertexV2BJetTags
+   vector<double>  *trksForIsoVeto_charge; // charges of the charged tracks for isolated veto studies
+   vector<double>  *trksForIsoVeto_dz; // dz of the charged tracks for isolated veto studies
+   vector<double>  *loose_isoTrks_charge; // charge of the loose isolated tracks (see loose_nIsoTrks)
+   vector<double>  *loose_isoTrks_dz; // dz of the loose isolated tracks
+   vector<double>  *loose_isoTrks_iso; // isolation values (divided by Pt to get relIso) for the loose isolated tracks
+   vector<double>  *loose_isoTrks_mtw; // MT of the loose isolated tracks and MET
+   vector<int>     *recoJetsFlavor; // jets parton flavor (pat::Jet::partonFlavour)
+   vector<int>     *genDecayIdxVec; // indices (pointing to the genParticles collection) of the gen particles in the decay chain
+   vector<int>     *genDecayPdgIdVec; // pdg id of the gen particles
+   vector<int>     *genDecayMomIdxVec; // mother indices of the gen particles (pointing to the genParticles collection) 
+   vector<int>     *W_emuVec; // store electron or muon indices which come from a W decay (pointing to the genDecayIdxVec)
+   vector<int>     *W_tau_emuVec; // store electron or muon indices which come from a tau (W->tau)
+   vector<int>     *W_tau_prongsVec; // store charged particle indices which come from a tau (W->tau): poin and Kaon
+   vector<int>     *trksForIsoVeto_pdgId; // pdg id of the charged tracks for isolated veto studies
+   vector<int>     *trksForIsoVeto_idx; // indices of the charged tracks for isolated veto studies (pointing to pfCandidate collection)
+   vector<int>     *loose_isoTrks_pdgId; // pdg id of the loose isolated tracks
+   vector<int>     *loose_isoTrks_idx; // indices of the loose isolated tracks (pointing to pfCandidate collection)
+   vector<int>     *forVetoIsoTrksidx; // indices of the isolated tracks (see nIsoTrks_CUT) (pointing to pfCandidate collection)
+   vector<string>  *genDecayStrVec; // decay string (for printout)
+   vector<string>  *fileNameStr; // file names that the event belongs to (can be used to map signals to root files)
+   vector<string>  *smsModelStr; // string of SMS model identifier
+   vector<TLorentzVector> *muonsLVec; // TLorentzVector of the muons
+   vector<TLorentzVector> *elesLVec; // TLorentzVector of the electrons
+   vector<TLorentzVector> *jetsLVec; // TLorentzVector of the jets
+   vector<TLorentzVector> *genDecayLVec; // TLorentzVector of the gen particles
+   vector<TLorentzVector> *trksForIsoVetoLVec; // TLorentzVector of the charged tracks for isolated veto studies
+   vector<TLorentzVector> *loose_isoTrksLVec; // TLorentzVector of the loose isolated tracks (see loose_nIsoTrks)
 
    // List of branches
    TBranch        *b_run;   //!
