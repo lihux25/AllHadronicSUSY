@@ -17,7 +17,7 @@ config.Data.unitsPerJob = 5
 config.Data.publication = False
 config.Data.publishDBS = 'https://cmsweb.cern.ch/dbs/prod/phys03/DBSWriter/'
 config.Data.publishDataName = 'PHYS14_PU20bx25_PHYS14_25_V1-FLAT'
-config.Data.outLFN = '/store/user/lpcsusyhad/PHYS14/PU20bx25_TTJets_MSDecaysCKM_madgraph-tauola/'
+config.Data.outLFN = '/store/group/lpcsusyhad/PHYS14_720_Dec23_2014/lhx/PU20bx25_TTJets_MSDecaysCKM_madgraph-tauola/'
 
 config.Data.ignoreLocality = False
 
