@@ -50,7 +50,9 @@ public :
    Double_t        smsMotherMass; // SMS model mother mass
    Double_t        smsDaughterMass; // SMS model daughter mass
    Int_t           nMuons_CUT; // number of muons: Pt>5 GeV, |eta|<2.4, relIso<0.2 (and other standard muon POG ID/ISO requirement)
+   Int_t           nMuons; // number of muons: Pt>5 GeV, |eta|<2.4 without relIso cut (+ other standard muon POG ID/ISO requirement)
    Int_t           nElectrons_CUT; // number of electrons: Pt>5 GeV, |eta|<2.5 and other 8 TeV electron POG standard definition
+   Int_t           nElectrons; // number of electrons: Pt>5 GeV, |eta|<2.5 without relIso cut (+ other 8 TeV electron POG standard definition) 
    Int_t           nJets; // number of jets with AK4 and Pt>10 GeV
    Int_t           loose_nIsoTrks; // number of isolated tracks with Pt>5 GeV and relIso < 0.5
    Int_t           nIsoTrks_CUT; // number of isolated tracks with Pt>10 GeV, dR<0.3, dz<0.05 and relIso<0.1
@@ -65,8 +67,10 @@ public :
    UInt_t          remainPassCSVS; // the Rsys has a CSVM b-tagged jet or not
    vector<double>  *muonsCharge; // charge of muons
    vector<double>  *muonsMtw; // MT of muon and MET
+   vector<double>  *muonsRelIso; // relIso of muons
    vector<double>  *elesCharge; // charge of electrons
    vector<double>  *elesMtw; // MT of electron and MET
+   vector<double>  *elesRelIso; // relIso of electrons
    vector<double>  *recoJetsBtag_0; // b-tagging CSV values. In PHYS14 sample, it's combinedInclusiveSecondaryVertexV2BJetTags
    vector<double>  *trksForIsoVeto_charge; // charges of the charged tracks for isolated veto studies
    vector<double>  *trksForIsoVeto_dz; // dz of the charged tracks for isolated veto studies
