@@ -73,6 +73,7 @@ prodElectrons::prodElectrons(const edm::ParameterSet & iConfig) {
   produces<std::vector<TLorentzVector> >("elesLVec");
   produces<std::vector<double> >("elesCharge");
   produces<std::vector<double> >("elesMtw");
+  produces<std::vector<double> >("elesRelIso");
   produces<int>("nElectrons");
 }
 
@@ -132,6 +133,7 @@ bool prodElectrons::filter(edm::Event& iEvent, const edm::EventSetup& iSetup) {
   std::auto_ptr<std::vector<TLorentzVector> > elesLVec(new std::vector<TLorentzVector>());
   std::auto_ptr<std::vector<double> > elesCharge(new std::vector<double>());
   std::auto_ptr<std::vector<double> > elesMtw(new std::vector<double>());
+  std::auto_ptr<std::vector<double> > elesRelIso(new std::vector<double>());
 
   // loop on electrons
   for( edm::View<pat::Electron>::const_iterator ele = electrons->begin(); ele != electrons->end(); ele++ ){
@@ -202,14 +204,13 @@ bool prodElectrons::filter(edm::Event& iEvent, const edm::EventSetup& iSetup) {
 
 
     // isolation cuts                                                                                                                                        
+    reco::GsfElectron::PflowIsolationVariables pfIso = ele->pfIsolationVariables();
+    float absiso = pfIso.sumChargedHadronPt + std::max(0.0 , pfIso.sumNeutralHadronEt + pfIso.sumPhotonEt - 0.5 * pfIso.sumPUPt );
+
+    // compute final isolation
+    double iso = absiso/pt;
+
     if (doEleIso_) {
-
-      reco::GsfElectron::PflowIsolationVariables pfIso = ele->pfIsolationVariables();
-      float absiso = pfIso.sumChargedHadronPt + std::max(0.0 , pfIso.sumNeutralHadronEt + pfIso.sumPhotonEt - 0.5 * pfIso.sumPUPt );
-
-      // compute final isolation
-      double iso = absiso/pt;
-
       if(iso > cut_iso[idx]) continue;
     }
 
@@ -223,6 +224,7 @@ bool prodElectrons::filter(edm::Event& iEvent, const edm::EventSetup& iSetup) {
 
        elesCharge->push_back(ele->charge());
        elesMtw->push_back(mtw);
+       elesRelIso->push_back(iso);
     }
 
   }
@@ -240,6 +242,7 @@ bool prodElectrons::filter(edm::Event& iEvent, const edm::EventSetup& iSetup) {
   iEvent.put(elesLVec, "elesLVec");
   iEvent.put(elesCharge, "elesCharge");
   iEvent.put(elesMtw, "elesMtw");
+  iEvent.put(elesRelIso, "elesRelIso");
   iEvent.put(nElectrons, "nElectrons");
 
   return result;

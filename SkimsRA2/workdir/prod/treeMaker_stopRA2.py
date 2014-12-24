@@ -465,19 +465,27 @@ process.load("AllHadronicSUSY.SkimsRA2.prodGenInfo_cfi")
 process.load("AllHadronicSUSY.SkimsRA2.prodIsoTrks_cfi")
 process.load("AllHadronicSUSY.SkimsRA2.prodEventInfo_cfi")
 
+process.prodMuonsNoIso = process.prodMuons.clone()
+process.prodMuonsNoIso.DoMuonIsolation = cms.bool(False)
+
+process.prodElectronsNoIso = process.prodElectrons.clone()
+process.prodElectronsNoIso.DoElectronIsolation = cms.bool(False)
+
 process.load("AllHadronicSUSY.TreeMaker.stopTreeMaker_cfi")
 process.stopTreeMaker.debug = cms.bool(options.debug)
 process.stopTreeMaker.TreeName = cms.string("AUX")
 
 process.stopTreeMaker.varsInt.append(cms.InputTag("prodMuons", "nMuons"))
 process.stopTreeMaker.varsIntNamesInTree.append("prodMuons:nMuons|nMuons_CUT")
-process.stopTreeMaker.vectorTLorentzVector.append(cms.InputTag("prodMuons", "muonsLVec"))
-process.stopTreeMaker.vectorDouble.extend([cms.InputTag("prodMuons", "muonsCharge"), cms.InputTag("prodMuons", "muonsMtw")])
+process.stopTreeMaker.varsInt.append(cms.InputTag("prodMuonsNoIso", "nMuons"))
+process.stopTreeMaker.vectorTLorentzVector.append(cms.InputTag("prodMuonsNoIso", "muonsLVec"))
+process.stopTreeMaker.vectorDouble.extend([cms.InputTag("prodMuonsNoIso", "muonsCharge"), cms.InputTag("prodMuonsNoIso", "muonsMtw"), cms.InputTag("prodMuonsNoIso", "muonsRelIso")])
 
 process.stopTreeMaker.varsInt.append(cms.InputTag("prodElectrons", "nElectrons"))
 process.stopTreeMaker.varsIntNamesInTree.append("prodElectrons:nElectrons|nElectrons_CUT")
-process.stopTreeMaker.vectorTLorentzVector.append(cms.InputTag("prodElectrons", "elesLVec"))
-process.stopTreeMaker.vectorDouble.extend([cms.InputTag("prodElectrons", "elesCharge"), cms.InputTag("prodElectrons", "elesMtw")])
+process.stopTreeMaker.varsInt.append(cms.InputTag("prodElectronsNoIso", "nElectrons"))
+process.stopTreeMaker.vectorTLorentzVector.append(cms.InputTag("prodElectronsNoIso", "elesLVec"))
+process.stopTreeMaker.vectorDouble.extend([cms.InputTag("prodElectronsNoIso", "elesCharge"), cms.InputTag("prodElectronsNoIso", "elesMtw"), cms.InputTag("prodElectronsNoIso", "elesRelIso")])
 
 process.stopTreeMaker.varsInt.append(cms.InputTag("prodJets", "nJets"))
 process.stopTreeMaker.vectorTLorentzVector.append(cms.InputTag("prodJets", "jetsLVec"))
@@ -533,7 +541,7 @@ if options.selSMSpts == True:
 process.ak4Stop_Path = cms.Path(
                                    process.comb_seq * 
                                    process.printDecayPythia8 *
-                                   process.prodMuons * process.prodElectrons * process.prodJets * process.prodMET * process.prodGenInfo * process.prodIsoTrks * process.prodEventInfo *
+                                   process.prodMuons * process.prodMuonsNoIso * process.prodElectrons * process.prodElectronsNoIso * process.prodJets * process.prodMET * process.prodGenInfo * process.prodIsoTrks * process.prodEventInfo *
                                    process.type3topTagger *
                                    process.stopTreeMaker
 )

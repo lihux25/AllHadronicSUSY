@@ -55,6 +55,7 @@ prodMuons::prodMuons(const edm::ParameterSet & iConfig) {
   produces<std::vector<TLorentzVector> >("muonsLVec");
   produces<std::vector<double> >("muonsCharge");
   produces<std::vector<double> >("muonsMtw");
+  produces<std::vector<double> >("muonsRelIso");
   produces<int>("nMuons");
 }
 
@@ -79,6 +80,7 @@ bool prodMuons::filter(edm::Event& iEvent, const edm::EventSetup& iSetup) {
   std::auto_ptr<std::vector<TLorentzVector> > muonsLVec(new std::vector<TLorentzVector>());
   std::auto_ptr<std::vector<double> > muonsCharge(new std::vector<double>());
   std::auto_ptr<std::vector<double> > muonsMtw(new std::vector<double>());
+  std::auto_ptr<std::vector<double> > muonsRelIso(new std::vector<double>());
 
   int imuon =0;
 
@@ -130,10 +132,10 @@ bool prodMuons::filter(edm::Event& iEvent, const edm::EventSetup& iSetup) {
 	if(debug_) {std::cout << "PassedMuon Vtx Association" << std::endl;}
       }
       // isolation cuts
+      float muRelIso = -1;
+      muRelIso = (m->pfIsolationR04().sumChargedHadronPt + std::max(0., m->pfIsolationR04().sumNeutralHadronEt + m->pfIsolationR04().sumPhotonEt - 0.5*m->pfIsolationR04().sumPUPt) )/ m->pt();
       if (doMuonIso_) {
-        float muRelIso = -1;
         //if (m->pfCandidateRef().isNull()) { // check wether this is a std or PF muon
-	muRelIso = (m->pfIsolationR04().sumChargedHadronPt + std::max(0., m->pfIsolationR04().sumNeutralHadronEt + m->pfIsolationR04().sumPhotonEt - 0.5*m->pfIsolationR04().sumPUPt) )/ m->pt();
         if (muRelIso >= maxMuRelIso_) continue;
 	if(debug_) {std::cout << "PassedMuon Isolation" << std::endl;}
       }
@@ -148,6 +150,7 @@ bool prodMuons::filter(edm::Event& iEvent, const edm::EventSetup& iSetup) {
 
          muonsCharge->push_back(m->charge());
          muonsMtw->push_back(mtw);
+         muonsRelIso->push_back(muRelIso);
       }
     }
   }
@@ -164,6 +167,7 @@ bool prodMuons::filter(edm::Event& iEvent, const edm::EventSetup& iSetup) {
   iEvent.put(muonsLVec, "muonsLVec");
   iEvent.put(muonsCharge, "muonsCharge");
   iEvent.put(muonsMtw, "muonsMtw");
+  iEvent.put(muonsRelIso, "muonsRelIso");
   iEvent.put(nMuons, "nMuons");
 
   return result;
